@@ -1860,14 +1860,14 @@ void MPDConnection::moveOutput(QString name)
 /*
  * Admin commands
  */
-void MPDConnection::updateMaybe()
+void MPDConnection::updateMaybe(const QString& path)
 {
 	if (!details.autoUpdate) {
-		update();
+		update(path);
 	}
 }
 
-void MPDConnection::update()
+void MPDConnection::update(const QString& path)
 {
 	if (isMopidy()) {
 		// Mopidy does not support MPD's update command. So, when user presses update DB, what we
@@ -1875,8 +1875,17 @@ void MPDConnection::update()
 		loadLibrary();
 	}
 	else {
-		sendCommand("update");
+		if (path.isEmpty()) {
+			sendCommand("update");
+		} else {
+			sendCommand("update " + encodeName(path));
+		}
 	}
+}
+
+void MPDConnection::updateAll()
+{
+	update();
 }
 
 /*

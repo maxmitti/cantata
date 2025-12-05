@@ -81,7 +81,7 @@ ActionDialog::ActionDialog(QWidget* parent)
 	configureDestButton->setIcon(Icons::self()->configureIcon);
 	connect(configureSourceButton, &QToolButton::clicked, this, &ActionDialog::configureSource);
 	connect(configureDestButton, &QToolButton::clicked, this, &ActionDialog::configureDest);
-	connect(this, &ActionDialog::update, MPDConnection::self(), &MPDConnection::update);
+	connect(this, &ActionDialog::update, MPDConnection::self(), &MPDConnection::updateAll);
 	//    connect(songCount, &QLabel::leftClickedUrl, this, &ActionDialog::showSongs);
 #ifdef QT_QTDBUS_FOUND
 	unityMessage = QDBusMessage::createSignal("/Cantata", "com.canonical.Unity.LauncherEntry", "Update");

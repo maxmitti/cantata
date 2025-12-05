@@ -1223,7 +1223,9 @@ bool TagEditor::applyUpdates()
 #endif
 					if (!isLocal) {
 				//             MusicLibraryModel::self()->removeCache();
-				emit update();
+						for (const Song& song : updatedSongs) {
+							emit update(song.filePath());
+						}
 			}
 		}
 	}

@@ -47,7 +47,7 @@ public:
 
 Q_SIGNALS:
 	// These are for communicating with MPD object (which is in its own thread, so need to talk via signal/slots)
-	void update();
+	void update(const QString& path = "");
 	void getRating(const QString& f);
 	void setRating(const QString& f, quint8 r);
 

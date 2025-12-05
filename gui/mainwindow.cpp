@@ -841,7 +841,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(ApiKeys::self(), &ApiKeys::error, this, &MainWindow::showError);
 	connect(refreshDbAction, &Action::triggered, this, &MainWindow::refreshDbPromp);
 	connect(doDbRefreshAction, &Action::triggered, MpdLibraryModel::self(), &MpdLibraryModel::clearDb);
-	connect(doDbRefreshAction, &Action::triggered, MPDConnection::self(), &MPDConnection::update);
+	connect(doDbRefreshAction, &Action::triggered, MPDConnection::self(), &MPDConnection::updateAll);
 	connect(doDbRefreshAction, &Action::triggered, messageWidget, &MessageWidget::animatedHide);
 	connect(connectAction, &Action::triggered, this, qOverload<>(&MainWindow::connectToMpd));
 	connect(StdActions::self()->prevTrackAction, &Action::triggered, MPDConnection::self(), &MPDConnection::goToPrevious);
