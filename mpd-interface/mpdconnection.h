@@ -374,8 +374,9 @@ public Q_SLOTS:
 	void listFolder(const QString& folder);
 
 	// Admin
-	void updateMaybe();
-	void update();
+	void updateMaybe(const QString& path = "");
+	void update(const QString& path = "");
+	void updateAll();
 
 	// Playlists
 	//     void listPlaylist(const QString &name);

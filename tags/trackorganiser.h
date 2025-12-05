@@ -49,7 +49,7 @@ public:
 
 Q_SIGNALS:
 	// These are for communicating with MPD object (which is in its own thread, so need to talk via signal/slots)
-	void update();
+	void update(const QString& path = "");
 
 private Q_SLOTS:
 	void configureFilenameScheme();
@@ -74,6 +74,7 @@ private:
 private:
 	FilenameSchemeDialog* schemeDlg;
 	QList<Song> origSongs;
+	QList<QString> touchedFiles;
 	QString deviceUdi;
 	Action* removeAct;
 	int index;

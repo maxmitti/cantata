@@ -270,6 +270,7 @@ void TrackOrganiser::renameFile()
 #endif
 		musicFolder = MPDConnection::self()->getDetails().dir;
 
+	QString original = s.filePath();
 	QString source = s.filePath(musicFolder);
 	QString dest = musicFolder + modified;
 	if (source != dest) {
@@ -362,6 +363,8 @@ void TrackOrganiser::renameFile()
 		// If file was renamed, then also rename any other matching files...
 		QDir sDir(Utils::getDir(source));
 		if (renamed) {
+			touchedFiles.append(original);
+			touchedFiles.append(modified);
 			QFileInfoList files = sDir.entryInfoList(QStringList() << Utils::changeExtension(Utils::getFile(source), ".*"));
 			for (const auto& file : files) {
 				QString destFile = Utils::changeExtension(dest, "." + file.suffix());
@@ -526,7 +529,9 @@ void TrackOrganiser::saveOptions()
 void TrackOrganiser::doUpdate()
 {
 	if (deviceUdi.isEmpty()) {
-		emit update();
+		for (const QString& file : touchedFiles) {
+			emit update(file);
+		}
 	}
 #ifdef ENABLE_DEVICES_SUPPORT
 	else {
