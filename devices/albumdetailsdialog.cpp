@@ -142,13 +142,13 @@ AlbumDetailsDialog::AlbumDetailsDialog(QWidget* parent)
 	genre->insertItems(0, strings);
 
 	QMenu* toolsMenu = new QMenu(this);
-	toolsMenu->addAction(tr("Apply \"Various Artists\" Workaround"), this, SLOT(applyVa()));
-	toolsMenu->addAction(tr("Revert \"Various Artists\" Workaround"), this, SLOT(revertVa()));
-	toolsMenu->addAction(tr("Capitalize"), this, SLOT(capitalise()));
-	toolsMenu->addAction(tr("Adjust Track Numbers"), this, SLOT(adjustTrackNumbers()));
+	toolsMenu->addAction(tr("Apply \"Various Artists\" Workaround"), this, &AlbumDetailsDialog::applyVa);
+	toolsMenu->addAction(tr("Revert \"Various Artists\" Workaround"), this, &AlbumDetailsDialog::revertVa);
+	toolsMenu->addAction(tr("Capitalize"), this, &AlbumDetailsDialog::capitalise);
+	toolsMenu->addAction(tr("Adjust Track Numbers"), this, &AlbumDetailsDialog::adjustTrackNumbers);
 	setButtonMenu(User1, toolsMenu, InstantPopup);
 	setButtonGuiItem(User1, GuiItem(tr("Tools"), "tools-wizard"));
-	connect(singleArtist, SIGNAL(toggled(bool)), SLOT(hideArtistColumn(bool)));
+	connect(singleArtist, &QCheckBox::toggled, this, &AlbumDetailsDialog::hideArtistColumn);
 	resize(600, 600);
 
 	int size = fontMetrics().height() * 5;
@@ -381,7 +381,7 @@ bool AlbumDetailsDialog::eventFilter(QObject* object, QEvent* event)
 		if (pressed && Qt::LeftButton == static_cast<QMouseEvent*>(event)->button()) {
 			if (0 == CoverDialog::instanceCount()) {
 				CoverDialog* dlg = new CoverDialog(this);
-				connect(dlg, SIGNAL(selectedCover(QImage, QString)), this, SLOT(coverSelected(QImage, QString)));
+				connect(dlg, &CoverDialog::selectedCover, this, &AlbumDetailsDialog::coverSelected);
 				Song s;
 				s.file = AudioCdDevice::coverUrl(udi);
 				s.artist = artist->text().trimmed();

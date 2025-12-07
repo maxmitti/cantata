@@ -150,7 +150,8 @@ Q_SIGNALS:
 	void playNext(const QList<quint32>& items, quint32 pos, quint32 size);
 
 public Q_SLOTS:
-	void showError(const QString& message, bool showActions = false);
+	void showErrorWithActions(const QString& message, bool showActions);
+	void showError(const QString& message);
 	void showInformation(const QString& message);
 	void dynamicStatus(const QString& message);
 	void setCollection(const QString& collection);
@@ -161,7 +162,7 @@ public Q_SLOTS:
 	void showAboutDialog();
 	void mpdConnectionStateChanged(bool connected);
 	void playQueueItemsSelected(bool s);
-	void showPreferencesDialog(const QString& page = QString());
+	void showPreferencesDialog();
 	void quit();
 	void commitDataRequest(QSessionManager& mgr);
 	void updateSettings();

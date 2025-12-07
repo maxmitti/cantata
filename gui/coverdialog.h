@@ -58,7 +58,7 @@ public:
 	void downloading(const QString& u);
 	bool aboutToShow(const QString& u) const { return u == url; }
 
-private Q_SLOTS:
+public Q_SLOTS:
 	void progress(qint64 rx, qint64 total);
 
 private:

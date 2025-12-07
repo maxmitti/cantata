@@ -51,7 +51,7 @@ static const int constMaxRedirects = 5;
 NetworkJob::NetworkJob(NetworkAccessManager* p, const QUrl& u)
 	: QObject(p), numRedirects(0), lastDownloadPc(0), job(nullptr), origU(u)
 {
-	QTimer::singleShot(0, this, SLOT(jobFinished()));
+	QTimer::singleShot(0, this, &NetworkJob::jobFinished);
 }
 
 NetworkJob::NetworkJob(QNetworkReply* j)
@@ -235,7 +235,7 @@ struct FakeNetworkReply : public QNetworkReply {
 	FakeNetworkReply() : QNetworkReply(nullptr)
 	{
 		setError(QNetworkReply::ConnectionRefusedError, QString());
-		QTimer::singleShot(0, this, SIGNAL(finished()));
+		QTimer::singleShot(0, this, &FakeNetworkReply::finished);
 	}
 	void abort() override {}
 	qint64 readData(char*, qint64) override { return 0; }

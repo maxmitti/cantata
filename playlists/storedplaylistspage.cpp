@@ -69,27 +69,27 @@ StoredPlaylistsPage::StoredPlaylistsPage(QWidget* p)
 	view->setModel(&proxy);
 	view->setDeleteAction(StdActions::self()->removeAction);
 	view->alwaysShowHeader();
-	connect(view, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(itemDoubleClicked(const QModelIndex&)));
-	connect(view, SIGNAL(itemsSelected(bool)), SLOT(controlActions()));
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
-	connect(this, SIGNAL(loadPlaylist(const QString&, bool)), MPDConnection::self(), SLOT(loadPlaylist(const QString&, bool)));
-	connect(this, SIGNAL(removePlaylist(const QString&)), MPDConnection::self(), SLOT(removePlaylist(const QString&)));
-	connect(this, SIGNAL(savePlaylist(const QString&, bool)), MPDConnection::self(), SLOT(savePlaylist(const QString&, bool)));
-	connect(this, SIGNAL(renamePlaylist(const QString&, const QString&)), MPDConnection::self(), SLOT(renamePlaylist(const QString&, const QString&)));
-	connect(this, SIGNAL(removeFromPlaylist(const QString&, const QList<quint32>&)), MPDConnection::self(), SLOT(removeFromPlaylist(const QString&, const QList<quint32>&)));
-	connect(StdActions::self()->savePlayQueueAction, SIGNAL(triggered()), this, SLOT(savePlaylist()));
-	connect(renamePlaylistAction, SIGNAL(triggered()), this, SLOT(renamePlaylist()));
-	connect(removeDuplicatesAction, SIGNAL(triggered()), this, SLOT(removeDuplicates()));
-	connect(removeInvalidAction, SIGNAL(triggered()), this, SLOT(removeInvalid()));
-	connect(PlaylistsModel::self(), SIGNAL(updated(const QModelIndex&)), this, SLOT(updated(const QModelIndex&)));
-	connect(PlaylistsModel::self(), SIGNAL(playlistRemoved(quint32)), view, SLOT(collectionRemoved(quint32)));
+	connect(view, &ItemView::doubleClicked, this, &StoredPlaylistsPage::itemDoubleClicked);
+	connect(view, &ItemView::itemsSelected, this, &StoredPlaylistsPage::controlActions);
+	connect(view, &ItemView::headerClicked, this, &StoredPlaylistsPage::headerClicked);
+	connect(this, &StoredPlaylistsPage::loadPlaylist, MPDConnection::self(), &MPDConnection::loadPlaylist);
+	connect(this, &StoredPlaylistsPage::removePlaylist, MPDConnection::self(), &MPDConnection::removePlaylist);
+	connect(this, qOverload<const QString&, bool>(&StoredPlaylistsPage::savePlaylist), MPDConnection::self(), &MPDConnection::savePlaylist);
+	connect(this, qOverload<const QString&, const QString&>(&StoredPlaylistsPage::renamePlaylist), MPDConnection::self(), &MPDConnection::renamePlaylist);
+	connect(this, &StoredPlaylistsPage::removeFromPlaylist, MPDConnection::self(), &MPDConnection::removeFromPlaylist);
+	connect(StdActions::self()->savePlayQueueAction, &Action::triggered, this, qOverload<>(&StoredPlaylistsPage::savePlaylist));
+	connect(renamePlaylistAction, &Action::triggered, this, qOverload<>(&StoredPlaylistsPage::renamePlaylist));
+	connect(removeDuplicatesAction, &Action::triggered, this, &StoredPlaylistsPage::removeDuplicates);
+	connect(removeInvalidAction, &Action::triggered, this, &StoredPlaylistsPage::removeInvalid);
+	connect(PlaylistsModel::self(), qOverload<const QModelIndex&>(&PlaylistsModel::updated), this, &StoredPlaylistsPage::updated);
+	connect(PlaylistsModel::self(), &PlaylistsModel::playlistRemoved, view, &ItemView::collectionRemoved);
 	intitiallyCollapseAction = new Action(tr("Initially Collapse Albums"), this);
 	intitiallyCollapseAction->setCheckable(true);
 	Configuration config(metaObject()->className());
 	view->setMode(ItemView::Mode_DetailedTree);
 	view->load(config);
 	intitiallyCollapseAction->setChecked(view->isStartClosed());
-	connect(intitiallyCollapseAction, SIGNAL(toggled(bool)), SLOT(setStartClosed(bool)));
+	connect(intitiallyCollapseAction, &Action::toggled, this, &StoredPlaylistsPage::setStartClosed);
 	MenuButton* menu = new MenuButton(this);
 	menu->addAction(createViewMenu(QList<ItemView::Mode>() << ItemView::Mode_BasicTree << ItemView::Mode_SimpleTree
 	                                                       << ItemView::Mode_DetailedTree << ItemView::Mode_List
@@ -106,7 +106,7 @@ StoredPlaylistsPage::StoredPlaylistsPage(QWidget* p)
 	view->addAction(StdActions::self()->removeAction);
 	view->addAction(removeDuplicatesAction);
 	view->addAction(removeInvalidAction);
-	connect(view, SIGNAL(updateToPlayQueue(QModelIndex, bool)), this, SLOT(updateToPlayQueue(QModelIndex, bool)));
+	connect(view, &ItemView::updateToPlayQueue, this, &StoredPlaylistsPage::updateToPlayQueue);
 	view->setInfoText(tr("Either save the play queue, or use the context menu in the library, to create new playlists."));
 }
 

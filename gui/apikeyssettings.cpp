@@ -106,7 +106,7 @@ ApiKeysSettings::ApiKeysSettings(QWidget* p)
 	}
 	tree->setColumnWidth(0, nameWidth);
 	tree->setColumnWidth(1, urlWidth);
-	connect(tree, SIGNAL(itemClicked(QTreeWidgetItem*, int)), SLOT(itemClicked(QTreeWidgetItem*, int)));
+	connect(tree, &QTreeWidget::itemClicked, this, &ApiKeysSettings::itemClicked);
 }
 
 void ApiKeysSettings::save()

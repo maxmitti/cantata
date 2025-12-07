@@ -68,12 +68,12 @@ void MpdLibraryDb::removeUnusedDbs()
 MpdLibraryDb::MpdLibraryDb(QObject* p)
 	: LibraryDb(p, "MPD"), loading(false), coverQuery(nullptr), albumIdOnlyCoverQuery(nullptr), artistImageQuery(nullptr)
 {
-	connect(MPDConnection::self(), SIGNAL(updatingLibrary(time_t)), this, SLOT(updateStarted(time_t)));
-	connect(MPDConnection::self(), SIGNAL(librarySongs(QList<Song>*)), this, SLOT(insertSongs(QList<Song>*)));
-	connect(MPDConnection::self(), SIGNAL(updatedLibrary()), this, SLOT(updateFinished()));
-	connect(MPDConnection::self(), SIGNAL(statsUpdated(MPDStatsValues)), this, SLOT(statsUpdated(MPDStatsValues)));
-	connect(this, SIGNAL(loadLibrary()), MPDConnection::self(), SLOT(loadLibrary()));
-	connect(MPDConnection::self(), SIGNAL(connectionChanged(MPDConnectionDetails)), this, SLOT(connectionChanged(MPDConnectionDetails)));
+	connect(MPDConnection::self(), &MPDConnection::updatingLibrary, this, &MpdLibraryDb::updateStarted);
+	connect(MPDConnection::self(), &MPDConnection::librarySongs, this, &MpdLibraryDb::insertSongs);
+	connect(MPDConnection::self(), &MPDConnection::updatedLibrary, this, &MpdLibraryDb::updateFinished);
+	connect(MPDConnection::self(), &MPDConnection::statsUpdated, this, &MpdLibraryDb::statsUpdated);
+	connect(this, &MpdLibraryDb::loadLibrary, MPDConnection::self(), &MPDConnection::loadLibrary);
+	connect(MPDConnection::self(), &MPDConnection::connectionChanged, this, &MpdLibraryDb::connectionChanged);
 	DBUG;
 }
 

@@ -607,8 +607,8 @@ CoverDownloader::CoverDownloader()
 	thread = new Thread(metaObject()->className());
 	moveToThread(thread);
 	thread->start();
-	connect(this, SIGNAL(mpdCover(Song)), MPDConnection::self(), SLOT(getCover(Song)));
-	connect(MPDConnection::self(), SIGNAL(albumArt(Song, QByteArray)), this, SLOT(mpdAlbumArt(Song, QByteArray)));
+	connect(this, &CoverDownloader::mpdCover, MPDConnection::self(), &MPDConnection::getCover);
+	connect(MPDConnection::self(), &MPDConnection::albumArt, this, &CoverDownloader::mpdAlbumArt);
 }
 
 void CoverDownloader::stop()
@@ -629,7 +629,7 @@ void CoverDownloader::download(const Song& song)
 		if (!imageUrl.isEmpty()) {
 			NetworkJob* j = network()->get(imageUrl);
 			jobs.insert(j, job);
-			connect(j, SIGNAL(finished()), this, SLOT(onlineJobFinished()));
+			connect(j, &NetworkJob::finished, this, &CoverDownloader::onlineJobFinished);
 		}
 		else {
 			failed(job);
@@ -700,7 +700,7 @@ bool CoverDownloader::downloadViaHttp(Job& job, JobType type)
 
 	job.type = type;
 	NetworkJob* j = network()->get(u);
-	connect(j, SIGNAL(finished()), this, SLOT(jobFinished()));
+	connect(j, &NetworkJob::finished, this, &CoverDownloader::jobFinished);
 	jobs.insert(j, job);
 	DBUG << u.toString();
 	return true;
@@ -720,7 +720,7 @@ void CoverDownloader::downloadViaRemote(Job& job)
 		url.setQuery(query);
 
 		NetworkJob* j = network()->get(url);
-		connect(j, SIGNAL(finished()), this, SLOT(lastFmArtistCallFinished()));
+		connect(j, &NetworkJob::finished, this, &CoverDownloader::lastFmArtistCallFinished);
 		job.type = JobRemote;
 		jobs.insert(j, job);
 		DBUG << url.toString();
@@ -734,7 +734,7 @@ void CoverDownloader::downloadViaRemote(Job& job)
 		query.addQueryItem("entity", "album");
 		url.setQuery(query);
 		NetworkJob* j = network()->get(url);
-		connect(j, SIGNAL(finished()), this, SLOT(remoteCallFinished()));
+		connect(j, &NetworkJob::finished, this, &CoverDownloader::remoteCallFinished);
 		job.type = JobRemote;
 		jobs.insert(j, job);
 		DBUG << url.toString();
@@ -843,7 +843,7 @@ void CoverDownloader::remoteCallFinished()
 
 		if (!url.isEmpty()) {
 			NetworkJob* j = network()->get(QNetworkRequest(QUrl(url)));
-			connect(j, SIGNAL(finished()), this, SLOT(jobFinished()));
+			connect(j, &NetworkJob::finished, this, &CoverDownloader::jobFinished);
 			DBUG << "download" << url;
 			jobs.insert(j, job);
 		}
@@ -906,7 +906,7 @@ void CoverDownloader::lastFmArtistCallFinished()
 
 		if (url.isValid()) {
 			NetworkJob* j = network()->get(QNetworkRequest(url));
-			connect(j, SIGNAL(finished()), this, SLOT(remoteCallFinished()));
+			connect(j, &NetworkJob::finished, this, &CoverDownloader::remoteCallFinished);
 			DBUG << "download" << url;
 			jobs.insert(j, job);
 		}
@@ -1178,7 +1178,7 @@ void CoverLocator::startTimer(int interval)
 	if (!timer) {
 		timer = thread->createTimer(this);
 		timer->setSingleShot(true);
-		connect(timer, SIGNAL(timeout()), this, SLOT(locate()), Qt::QueuedConnection);
+		connect(timer, &QTimer::timeout, this, qOverload<>(&CoverLocator::locate), Qt::QueuedConnection);
 	}
 	timer->start(interval);
 }
@@ -1237,7 +1237,7 @@ void CoverLoader::startTimer(int interval)
 	if (!timer) {
 		timer = thread->createTimer(this);
 		timer->setSingleShot(true);
-		connect(timer, SIGNAL(timeout()), this, SLOT(load()), Qt::QueuedConnection);
+		connect(timer, &QTimer::timeout, this, qOverload<>(&CoverLoader::load), Qt::QueuedConnection);
 	}
 	timer->start(interval);
 }
@@ -1304,19 +1304,19 @@ void Covers::readConfig()
 void Covers::stop()
 {
 	if (downloader) {
-		disconnect(downloader, SIGNAL(artistImage(Song, QImage, QString)), this, SLOT(artistImageDownloaded(Song, QImage, QString)));
-		disconnect(downloader, SIGNAL(composerImage(Song, QImage, QString)), this, SLOT(composerImageDownloaded(Song, QImage, QString)));
-		disconnect(downloader, SIGNAL(cover(Song, QImage, QString)), this, SLOT(coverDownloaded(Song, QImage, QString)));
+		disconnect(downloader, &CoverDownloader::artistImage, this, &Covers::artistImageDownloaded);
+		disconnect(downloader, &CoverDownloader::composerImage, this, &Covers::composerImageDownloaded);
+		disconnect(downloader, &CoverDownloader::cover, this, &Covers::coverDownloaded);
 		downloader->stop();
 		downloader = nullptr;
 	}
 	if (locator) {
-		disconnect(locator, SIGNAL(located(QList<LocatedCover>)), this, SLOT(located(QList<LocatedCover>)));
+		disconnect(locator, &CoverLocator::located, this, &Covers::located);
 		locator->stop();
 		locator = nullptr;
 	}
 	if (loader) {
-		disconnect(loader, SIGNAL(loaded(QList<LoadedCover>)), this, SLOT(loaded(QList<LoadedCover>)));
+		disconnect(loader, &CoverLoader::loaded, this, qOverload<const QList<LoadedCover>&>(&Covers::loaded));
 		loader->stop();
 		loader = nullptr;
 	}
@@ -1579,8 +1579,8 @@ void Covers::tryToLocate(const Song& song)
 		qRegisterMetaType<LocatedCover>("LocatedCover");
 		qRegisterMetaType<QList<LocatedCover>>("QList<LocatedCover>");
 		locator = new CoverLocator();
-		connect(locator, SIGNAL(located(QList<LocatedCover>)), this, SLOT(located(QList<LocatedCover>)), Qt::QueuedConnection);
-		connect(this, SIGNAL(locate(Song)), locator, SLOT(locate(Song)), Qt::QueuedConnection);
+		connect(locator, &CoverLocator::located, this, &Covers::located, Qt::QueuedConnection);
+		connect(this, &Covers::locate, locator, qOverload<const Song&>(&CoverLocator::locate), Qt::QueuedConnection);
 	}
 	emit locate(song);
 }
@@ -1594,9 +1594,9 @@ void Covers::tryToDownload(const Song& song)
 #endif
 	if (!downloader) {
 		downloader = new CoverDownloader();
-		connect(this, SIGNAL(download(Song)), downloader, SLOT(download(Song)), Qt::QueuedConnection);
-		connect(downloader, SIGNAL(artistImage(Song, QImage, QString)), this, SLOT(artistImageDownloaded(Song, QImage, QString)), Qt::QueuedConnection);
-		connect(downloader, SIGNAL(cover(Song, QImage, QString)), this, SLOT(coverDownloaded(Song, QImage, QString)), Qt::QueuedConnection);
+		connect(this, &Covers::download, downloader, &CoverDownloader::download, Qt::QueuedConnection);
+		connect(downloader, &CoverDownloader::artistImage, this, &Covers::artistImageDownloaded, Qt::QueuedConnection);
+		connect(downloader, &CoverDownloader::cover, this, &Covers::coverDownloaded, Qt::QueuedConnection);
 	}
 	emit download(song);
 }
@@ -1607,8 +1607,8 @@ void Covers::tryToLoad(const Song& song)
 		qRegisterMetaType<LoadedCover>("LoadedCover");
 		qRegisterMetaType<QList<LoadedCover>>("QList<LoadedCover>");
 		loader = new CoverLoader();
-		connect(loader, SIGNAL(loaded(QList<LoadedCover>)), this, SLOT(loaded(QList<LoadedCover>)), Qt::QueuedConnection);
-		connect(this, SIGNAL(load(Song)), loader, SLOT(load(Song)), Qt::QueuedConnection);
+		connect(loader, &CoverLoader::loaded, this, qOverload<const QList<LoadedCover>&>(&Covers::loaded), Qt::QueuedConnection);
+		connect(this, &Covers::load, loader, qOverload<const Song&>(&CoverLoader::load), Qt::QueuedConnection);
 	}
 	emit load(song);
 }

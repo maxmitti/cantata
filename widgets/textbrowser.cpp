@@ -115,7 +115,7 @@ void TextBrowser::handleSizeChange()
 			else {
 				timer = new QTimer(this);
 				timer->setSingleShot(true);
-				connect(timer, SIGNAL(timeout()), SLOT(refreshHtml()));
+				connect(timer, &QTimer::timeout, this, &TextBrowser::refreshHtml);
 			}
 			lastImageSize = imgSize;
 			timer->start();

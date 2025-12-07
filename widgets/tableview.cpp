@@ -92,7 +92,7 @@ TableView::TableView(const QString& cfgGroup, QWidget* parent, bool menuAlwaysAl
 	setAttribute(Qt::WA_MouseTracking, true);
 	StretchHeaderView* hdr = new StretchHeaderView(Qt::Horizontal, this);
 	setHeader(hdr);
-	connect(hdr, SIGNAL(StretchEnabledChanged(bool)), SLOT(stretchToggled(bool)));
+	connect(hdr, &StretchHeaderView::StretchEnabledChanged, this, &TableView::stretchToggled);
 }
 
 void TableView::setModel(QAbstractItemModel* m)
@@ -133,7 +133,7 @@ void TableView::initHeader()
 			}
 		}
 		hdr->setSectionsMovable(true);
-		connect(hdr, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showMenu(QPoint)));
+		connect(hdr, &StretchHeaderView::customContextMenuRequested, this, &TableView::showMenu);
 	}
 
 	//Restore state
@@ -153,7 +153,7 @@ void TableView::initHeader()
 		QAction* stretch = new QAction(tr("Stretch Columns To Fit Window"), this);
 		stretch->setCheckable(true);
 		stretch->setChecked(hdr->is_stretch_enabled());
-		connect(stretch, SIGNAL(toggled(bool)), hdr, SLOT(SetStretchEnabled(bool)));
+		connect(stretch, &QAction::toggled, hdr, &StretchHeaderView::SetStretchEnabled);
 		menu->addAction(stretch);
 
 		QMenu* alignmentMenu = new QMenu(menu);
@@ -166,7 +166,7 @@ void TableView::initHeader()
 		alignCenterAction->setCheckable(true);
 		alignRightAction->setCheckable(true);
 		alignmentMenu->addActions(alignGroup->actions());
-		connect(alignGroup, SIGNAL(triggered(QAction*)), SLOT(alignmentChanged()));
+		connect(alignGroup, &QActionGroup::triggered, this, &TableView::alignmentChanged);
 		alignAction = new QAction(tr("Alignment"), menu);
 		alignAction->setMenu(alignmentMenu);
 		menu->addAction(alignAction);
@@ -178,7 +178,7 @@ void TableView::initHeader()
 			act->setChecked(!hdr->isSectionHidden(col));
 			menu->addAction(act);
 			act->setData(col);
-			connect(act, SIGNAL(toggled(bool)), this, SLOT(toggleHeaderItem(bool)));
+			connect(act, &QAction::toggled, this, &TableView::toggleHeaderItem);
 		}
 	}
 }

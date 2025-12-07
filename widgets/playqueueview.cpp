@@ -102,7 +102,7 @@ PlayQueueView::PlayQueueView(QWidget* parent)
 	setMode(ItemView::Mode_GroupedTree);
 	animator.setPropertyName("fade");
 	animator.setTargetObject(this);
-	connect(CurrentCover::self(), SIGNAL(coverImage(QImage)), this, SLOT(setImage(QImage)));
+	connect(CurrentCover::self(), &CurrentCover::coverImage, this, &PlayQueueView::setImage);
 }
 
 PlayQueueView::~PlayQueueView()
@@ -180,8 +180,8 @@ void PlayQueueView::setMode(ItemView::Mode m)
 			groupedView->setExpandsOnDoubleClick(false);
 			groupedView->installFilter(new KeyEventHandler(groupedView, removeFromAction));
 			addWidget(groupedView);
-			connect(groupedView, SIGNAL(itemsSelected(bool)), SIGNAL(itemsSelected(bool)));
-			connect(groupedView, SIGNAL(doubleClicked(const QModelIndex&)), SIGNAL(doubleClicked(const QModelIndex&)));
+			connect(groupedView, &PlayQueueGroupedView::itemsSelected, this, &PlayQueueView::itemsSelected);
+			connect(groupedView, &PlayQueueGroupedView::doubleClicked, this, &PlayQueueView::doubleClicked);
 			updatePalette();
 #ifdef Q_OS_MAC
 			groupedView->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -197,8 +197,8 @@ void PlayQueueView::setMode(ItemView::Mode m)
 			treeView->installFilter(new KeyEventHandler(treeView, removeFromAction));
 			treeView->initHeader();
 			addWidget(treeView);
-			connect(treeView, SIGNAL(itemsSelected(bool)), SIGNAL(itemsSelected(bool)));
-			connect(treeView, SIGNAL(doubleClicked(const QModelIndex&)), SIGNAL(doubleClicked(const QModelIndex&)));
+			connect(treeView, &PlayQueueTreeView::itemsSelected, this, &PlayQueueView::itemsSelected);
+			connect(treeView, &PlayQueueTreeView::doubleClicked, this, &PlayQueueView::doubleClicked);
 			updatePalette();
 #ifdef Q_OS_MAC
 			treeView->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -459,8 +459,8 @@ void PlayQueueView::streamFetchStatus(const QString& msg)
 	if (!msgOverlay) {
 		msgOverlay = new MessageOverlay(this);
 		msgOverlay->setWidget(view());
-		connect(msgOverlay, SIGNAL(cancel()), SIGNAL(cancelStreamFetch()));
-		connect(msgOverlay, SIGNAL(cancel()), SLOT(hideSpinner()));
+		connect(msgOverlay, &MessageOverlay::cancel, this, &PlayQueueView::cancelStreamFetch);
+		connect(msgOverlay, &MessageOverlay::cancel, this, &PlayQueueView::hideSpinner);
 	}
 	msgOverlay->setText(msg);
 }

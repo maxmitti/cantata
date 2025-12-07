@@ -512,14 +512,14 @@ StreamsModel::StreamsModel(QObject* parent)
 		}
 	}
 
-	connect(MPDConnection::self(), SIGNAL(savedStream(QString, QString)), SLOT(savedFavouriteStream(QString, QString)));
-	connect(MPDConnection::self(), SIGNAL(removedStreams(QList<quint32>)), SLOT(removedFavouriteStreams(QList<quint32>)));
-	connect(MPDConnection::self(), SIGNAL(streamList(QList<Stream>)), SLOT(favouriteStreams(QList<Stream>)));
-	connect(MPDConnection::self(), SIGNAL(stateChanged(bool)), SLOT(mpdConnectionState(bool)));
-	connect(this, SIGNAL(listFavouriteStreams()), MPDConnection::self(), SLOT(listStreams()));
-	connect(this, SIGNAL(saveFavouriteStream(QString, QString)), MPDConnection::self(), SLOT(saveStream(QString, QString)));
-	connect(this, SIGNAL(removeFavouriteStreams(QList<quint32>)), MPDConnection::self(), SLOT(removeStreams(QList<quint32>)));
-	connect(this, SIGNAL(editFavouriteStream(QString, QString, quint32)), MPDConnection::self(), SLOT(editStream(QString, QString, quint32)));
+	connect(MPDConnection::self(), &MPDConnection::savedStream, this, &StreamsModel::savedFavouriteStream);
+	connect(MPDConnection::self(), &MPDConnection::removedStreams, this, &StreamsModel::removedFavouriteStreams);
+	connect(MPDConnection::self(), &MPDConnection::streamList, this, &StreamsModel::favouriteStreams);
+	connect(MPDConnection::self(), &MPDConnection::stateChanged, this, &StreamsModel::mpdConnectionState);
+	connect(this, &StreamsModel::listFavouriteStreams, MPDConnection::self(), &MPDConnection::listStreams);
+	connect(this, &StreamsModel::saveFavouriteStream, MPDConnection::self(), &MPDConnection::saveStream);
+	connect(this, &StreamsModel::removeFavouriteStreams, MPDConnection::self(), &MPDConnection::removeStreams);
+	connect(this, &StreamsModel::editFavouriteStream, MPDConnection::self(), &MPDConnection::editStream);
 }
 
 StreamsModel::~StreamsModel()
@@ -710,13 +710,13 @@ void StreamsModel::fetchMore(const QModelIndex& index)
 				emit loading();
 			}
 			jobs.insert(job, cat);
-			connect(job, SIGNAL(finished()), SLOT(jobFinished()));
+			connect(job, &NetworkJob::finished, this, &StreamsModel::jobFinished);
 			cat->state = CategoryItem::Fetching;
 
 			job = cat->fetchSecondardyUrl();
 			if (job) {
 				jobs.insert(job, cat);
-				connect(job, SIGNAL(finished()), SLOT(jobFinished()));
+				connect(job, &NetworkJob::finished, this, &StreamsModel::jobFinished);
 			}
 		}
 		emit dataChanged(index, index);

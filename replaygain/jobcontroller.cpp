@@ -47,7 +47,7 @@ void StandardJob::start()
 		thread = new Thread(metaObject()->className());
 		moveToThread(thread);
 		thread->start();
-		connect(this, SIGNAL(exec()), this, SLOT(run()), Qt::QueuedConnection);
+		connect(this, &StandardJob::exec, this, &StandardJob::run, Qt::QueuedConnection);
 		emit exec();
 	}
 }
@@ -92,7 +92,7 @@ void JobController::startJobs()
 	while (active.count() < maxActive && !jobs.isEmpty()) {
 		Job* job = jobs.takeAt(0);
 		active.append(job);
-		connect(job, SIGNAL(done()), this, SLOT(jobDone()), Qt::QueuedConnection);
+		connect(job, &Job::done, this, &JobController::jobDone, Qt::QueuedConnection);
 		job->start();
 	}
 }
@@ -100,7 +100,7 @@ void JobController::startJobs()
 void JobController::cancel()
 {
 	for (Job* j : active) {
-		disconnect(j, SIGNAL(done()), this, SLOT(jobDone()));
+		disconnect(j, &Job::done, this, &JobController::jobDone);
 		j->stop();
 	}
 	active.clear();

@@ -105,13 +105,13 @@ PodcastSettingsDialog::PodcastSettingsDialog(QWidget* p)
 
 	origRssUpdate = Settings::self()->rssUpdate();
 	setIndex(updateCombo, origRssUpdate);
-	connect(updateCombo, SIGNAL(currentIndexChanged(int)), SLOT(checkSaveable()));
+	connect(updateCombo, &QComboBox::currentIndexChanged, this, &PodcastSettingsDialog::checkSaveable);
 	origPodcastDownloadPath = Utils::convertPathForDisplay(Settings::self()->podcastDownloadPath());
 	origPodcastAutoDownload = Settings::self()->podcastAutoDownloadLimit();
 	setIndex(autoDownloadCombo, origPodcastAutoDownload);
 	downloadPath->setText(origPodcastDownloadPath);
-	connect(downloadPath, SIGNAL(textChanged(QString)), SLOT(checkSaveable()));
-	connect(autoDownloadCombo, SIGNAL(currentIndexChanged(int)), SLOT(checkSaveable()));
+	connect(downloadPath, &PathRequester::textChanged, this, &PodcastSettingsDialog::checkSaveable);
+	connect(autoDownloadCombo, &QComboBox::currentIndexChanged, this, &PodcastSettingsDialog::checkSaveable);
 	enableButton(Ok, false);
 	changed = 0;
 }

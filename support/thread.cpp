@@ -53,7 +53,7 @@ void ThreadCleaner::stopAll()
 	DBUG << "Remaining threads:" << threads.count();
 	for (Thread* thread : threads) {
 		DBUG << "Cleanup" << thread->objectName();
-		disconnect(thread, SIGNAL(finished()), this, SLOT(threadFinished()));
+		disconnect(thread, &Thread::finished, this, &ThreadCleaner::threadFinished);
 	}
 
 	for (Thread* thread : threads) {
@@ -91,7 +91,7 @@ void ThreadCleaner::threadFinished()
 void ThreadCleaner::add(Thread* thread)
 {
 	threads.append(thread);
-	connect(thread, SIGNAL(finished()), this, SLOT(threadFinished()));
+	connect(thread, &Thread::finished, this, &ThreadCleaner::threadFinished);
 	DBUG << "Thread created" << thread->objectName() << "Total threads:" << threads.count();
 }
 
@@ -115,14 +115,14 @@ void Thread::run()
 QTimer* Thread::createTimer(QObject* parent)
 {
 	QTimer* timer = new QTimer(parent ? parent : this);
-	connect(this, SIGNAL(finished()), timer, SLOT(stop()));
+	connect(this, &Thread::finished, timer, &QTimer::stop);
 	return timer;
 }
 
 void Thread::deleteTimer(QTimer* timer)
 {
 	if (timer) {
-		disconnect(this, SIGNAL(finished()), timer, SLOT(stop()));
+		disconnect(this, &Thread::finished, timer, &QTimer::stop);
 		timer->deleteLater();
 	}
 }

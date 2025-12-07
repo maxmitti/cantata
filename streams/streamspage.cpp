@@ -53,18 +53,18 @@ StreamsPage::StreamsPage(QWidget* p)
 
 	browse = new StreamsBrowsePage(this);
 	addWidget(browse);
-	connect(browse, SIGNAL(close()), this, SIGNAL(close()));
-	connect(browse, SIGNAL(searchForStreams()), this, SLOT(searchForStreams()));
+	connect(browse, &StreamsBrowsePage::close, this, &StreamsPage::close);
+	connect(browse, &StreamsBrowsePage::searchForStreams, this, &StreamsPage::searchForStreams);
 	search = new StreamSearchPage(this);
 	addWidget(search);
-	connect(search, SIGNAL(close()), this, SLOT(closeSearch()));
+	connect(search, &StreamSearchPage::close, this, &StreamsPage::closeSearch);
 
-	disconnect(browse, SIGNAL(add(const QStringList&, int, quint8, bool)), MPDConnection::self(), SLOT(add(const QStringList&, int, quint8, bool)));
-	disconnect(search, SIGNAL(add(const QStringList&, int, quint8, bool)), MPDConnection::self(), SLOT(add(const QStringList&, int, quint8, bool)));
-	connect(browse, SIGNAL(add(const QStringList&, int, quint8, bool)), PlayQueueModel::self(), SLOT(addItems(const QStringList&, int, quint8, bool)));
-	connect(search, SIGNAL(add(const QStringList&, int, quint8, bool)), PlayQueueModel::self(), SLOT(addItems(const QStringList&, int, quint8, bool)));
+	disconnect(browse, &StreamsBrowsePage::add, MPDConnection::self(), qOverload<const QStringList&, int, quint8, bool>(&MPDConnection::add));
+	disconnect(search, &StreamSearchPage::add, MPDConnection::self(), qOverload<const QStringList&, int, quint8, bool>(&MPDConnection::add));
+	connect(browse, &StreamsBrowsePage::add, PlayQueueModel::self(), qOverload<const QStringList&, int, quint8, bool>(&PlayQueueModel::addItems));
+	connect(search, &StreamSearchPage::add, PlayQueueModel::self(), qOverload<const QStringList&, int, quint8, bool>(&PlayQueueModel::addItems));
 	connect(StreamsModel::self()->addToFavouritesAct(), &QAction::triggered, this, &StreamsPage::addToFavourites);
-	connect(search, SIGNAL(addToFavourites(QList<StreamItem>)), browse, SLOT(addToFavourites(QList<StreamItem>)));
+	connect(search, qOverload<const QList<StreamItem>&>(&StreamSearchPage::addToFavourites), browse, qOverload<const QList<StreamItem>&>(&StreamsBrowsePage::addToFavourites));
 }
 
 StreamsPage::~StreamsPage()
@@ -100,23 +100,23 @@ StreamsBrowsePage::StreamsBrowsePage(QWidget* p)
 	addAction = ActionCollection::get()->createAction("addstream", tr("Add New Stream To Favorites"));
 	editAction = new Action(Icons::self()->editIcon, tr("Edit"), this);
 	searchAction = new Action(Icons::self()->searchIcon, tr("Seatch For Streams"), this);
-	connect(searchAction, SIGNAL(triggered()), this, SIGNAL(searchForStreams()));
-	//     connect(view, SIGNAL(itemsSelected(bool)), addToPlaylist, SLOT(setEnabled(bool)));
-	connect(view, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(itemDoubleClicked(const QModelIndex&)));
-	connect(view, SIGNAL(itemsSelected(bool)), SLOT(controlActions()));
-	connect(addAction, SIGNAL(triggered()), this, SLOT(addStream()));
-	connect(StreamsModel::self()->addBookmarkAct(), SIGNAL(triggered()), this, SLOT(addBookmark()));
-	connect(StreamsModel::self()->reloadAct(), SIGNAL(triggered()), this, SLOT(reload()));
-	connect(editAction, SIGNAL(triggered()), this, SLOT(edit()));
-	connect(importAction, SIGNAL(triggered()), this, SLOT(importXml()));
-	connect(exportAction, SIGNAL(triggered()), this, SLOT(exportXml()));
-	connect(StreamsModel::self(), SIGNAL(error(const QString&)), this, SIGNAL(error(const QString&)));
-	connect(StreamsModel::self(), SIGNAL(loading()), view, SLOT(showSpinner()));
-	connect(StreamsModel::self(), SIGNAL(loaded()), view, SLOT(hideSpinner()));
-	connect(StreamsModel::self(), SIGNAL(categoriesChanged()), view, SLOT(closeSearch()));
-	connect(StreamsModel::self(), SIGNAL(favouritesLoaded()), SLOT(expandFavourites()));
-	connect(StreamsModel::self(), SIGNAL(addedToFavourites(QString)), SLOT(addedToFavourites(QString)));
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
+	connect(searchAction, &Action::triggered, this, &StreamsBrowsePage::searchForStreams);
+	//     connect(view, &ItemView::itemsSelected, addToPlaylist, &Action::setEnabled);
+	connect(view, &ItemView::doubleClicked, this, &StreamsBrowsePage::itemDoubleClicked);
+	connect(view, &ItemView::itemsSelected, this, &StreamsBrowsePage::controlActions);
+	connect(addAction, &Action::triggered, this, &StreamsBrowsePage::addStream);
+	connect(StreamsModel::self()->addBookmarkAct(), &Action::triggered, this, &StreamsBrowsePage::addBookmark);
+	connect(StreamsModel::self()->reloadAct(), &Action::triggered, this, &StreamsBrowsePage::reload);
+	connect(editAction, &Action::triggered, this, &StreamsBrowsePage::edit);
+	connect(importAction, &Action::triggered, this, &StreamsBrowsePage::importXml);
+	connect(exportAction, &Action::triggered, this, &StreamsBrowsePage::exportXml);
+	connect(StreamsModel::self(), &StreamsModel::error, this, &StreamsBrowsePage::error);
+	connect(StreamsModel::self(), &StreamsModel::loading, view, &ItemView::showSpinner);
+	connect(StreamsModel::self(), &StreamsModel::loaded, view, &ItemView::hideSpinner);
+	connect(StreamsModel::self(), &StreamsModel::categoriesChanged, view, &ItemView::closeSearch);
+	connect(StreamsModel::self(), &StreamsModel::favouritesLoaded, this, &StreamsBrowsePage::expandFavourites);
+	connect(StreamsModel::self(), &StreamsModel::addedToFavourites, this, &StreamsBrowsePage::addedToFavourites);
+	connect(view, &ItemView::headerClicked, this, &StreamsBrowsePage::headerClicked);
 
 	proxy.setSourceModel(StreamsModel::self());
 	view->setModel(&proxy);
@@ -154,7 +154,7 @@ StreamsBrowsePage::StreamsBrowsePage(QWidget* p)
 StreamsBrowsePage::~StreamsBrowsePage()
 {
 	for (NetworkJob* job : resolveJobs) {
-		disconnect(job, SIGNAL(finished()), this, SLOT(tuneInResolved()));
+		disconnect(job, &NetworkJob::finished, this, &StreamsBrowsePage::tuneInResolved);
 		job->deleteLater();
 	}
 	resolveJobs.clear();
@@ -308,7 +308,7 @@ void StreamsBrowsePage::addToFavourites(const QList<StreamItem>& items)
 		if (urlStr.startsWith(QLatin1String("http://opml.radiotime.com/Tune.ashx"))) {
 			NetworkJob* job = NetworkAccessManager::self()->get(urlStr, 5000);
 			job->setProperty(constNameProperty, item.modifiedName);
-			connect(job, SIGNAL(finished()), this, SLOT(tuneInResolved()));
+			connect(job, &NetworkJob::finished, this, &StreamsBrowsePage::tuneInResolved);
 			resolveJobs.insert(job);
 			added++;
 		}
@@ -536,7 +536,7 @@ StreamSearchPage::StreamSearchPage(QWidget* p)
 	view->setModel(&proxy);
 	view->alwaysShowHeader();
 	view->setPermanentSearch();
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
+	connect(view, &ItemView::headerClicked, this, &StreamSearchPage::headerClicked);
 	view->setMode(ItemView::Mode_DetailedTree);
 	init(ReplacePlayQueue);
 	connect(StreamsModel::self(), &StreamsModel::addedToFavourites, this, &StreamSearchPage::addedToFavourites);

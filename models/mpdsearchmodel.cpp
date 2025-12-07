@@ -29,11 +29,11 @@
 MpdSearchModel::MpdSearchModel(QObject* parent)
 	: SearchModel(parent), currentId(0)
 {
-	connect(this, SIGNAL(getRating(QString)), MPDConnection::self(), SLOT(getRating(QString)));
-	connect(this, SIGNAL(search(QString, QString, int)), MPDConnection::self(), SLOT(search(QString, QString, int)));
-	connect(MPDConnection::self(), SIGNAL(searchResponse(int, QList<Song>)), this, SLOT(searchFinished(int, QList<Song>)));
-	connect(MPDConnection::self(), SIGNAL(rating(QString, quint8)), SLOT(ratingResult(QString, quint8)));
-	connect(Covers::self(), SIGNAL(loaded(Song, int)), this, SLOT(coverLoaded(Song, int)));
+	connect(this, &MpdSearchModel::getRating, MPDConnection::self(), &MPDConnection::getRating);
+	connect(this, qOverload<const QString&, const QString&, int>(&MpdSearchModel::search), MPDConnection::self(), qOverload<const QString&, const QString&, int>(&MPDConnection::search));
+	connect(MPDConnection::self(), qOverload<int, const QList<Song>&>(&MPDConnection::searchResponse), this, &MpdSearchModel::searchFinished);
+	connect(MPDConnection::self(), &MPDConnection::rating, this, &MpdSearchModel::ratingResult);
+	connect(Covers::self(), qOverload<const Song&, int>(&Covers::loaded), this, qOverload<const Song&, int>(&MpdSearchModel::coverLoaded));
 }
 
 MpdSearchModel::~MpdSearchModel()

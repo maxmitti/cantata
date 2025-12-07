@@ -52,13 +52,13 @@ SearchPage::SearchPage(QWidget* p)
 	locateAction = new Action(Icons::self()->searchIcon, tr("Locate In Library"), this);
 	view->allowTableView(new SearchTableView(view));
 
-	connect(&model, SIGNAL(searching()), view, SLOT(showSpinner()));
-	connect(&model, SIGNAL(searched()), view, SLOT(hideSpinner()));
-	connect(&model, SIGNAL(statsUpdated(int, quint32)), this, SLOT(statsUpdated(int, quint32)));
-	connect(view, SIGNAL(itemsSelected(bool)), this, SLOT(controlActions()));
-	connect(view, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(itemDoubleClicked(const QModelIndex&)));
-	connect(MPDConnection::self(), SIGNAL(stateChanged(bool)), this, SLOT(setSearchCategories()));
-	connect(locateAction, SIGNAL(triggered()), SLOT(locateSongs()));
+	connect(&model, &MpdSearchModel::searching, view, &ItemView::showSpinner);
+	connect(&model, &MpdSearchModel::searched, view, &ItemView::hideSpinner);
+	connect(&model, &MpdSearchModel::statsUpdated, this, &SearchPage::statsUpdated);
+	connect(view, &ItemView::itemsSelected, this, &SearchPage::controlActions);
+	connect(view, &ItemView::doubleClicked, this, &SearchPage::itemDoubleClicked);
+	connect(MPDConnection::self(), &MPDConnection::stateChanged, this, &SearchPage::setSearchCategories);
+	connect(locateAction, &Action::triggered, this, &SearchPage::locateSongs);
 	proxy.setSourceModel(&model);
 	view->setModel(&proxy);
 	view->setPermanentSearch();

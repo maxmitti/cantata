@@ -306,8 +306,8 @@ PageWidget::PageWidget(QWidget* p, bool listView, bool headers)
 	QBoxLayout* layout = new QBoxLayout(QBoxLayout::LeftToRight, this);
 	list = new QListWidget(p);
 	stack = new QStackedWidget(p);
-	connect(list, SIGNAL(currentRowChanged(int)), stack, SLOT(setCurrentIndex(int)));
-	connect(stack, SIGNAL(currentChanged(int)), this, SIGNAL(currentPageChanged()));
+	connect(list, &QListWidget::currentRowChanged, stack, &QStackedWidget::setCurrentIndex);
+	connect(stack, &QStackedWidget::currentChanged, this, &PageWidget::currentPageChanged);
 	layout->addWidget(list);
 	layout->addWidget(stack);
 	layout->setContentsMargins(0, 0, 0, 0);

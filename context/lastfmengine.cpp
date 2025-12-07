@@ -100,7 +100,7 @@ void LastFmEngine::search(const QStringList& query, Mode mode)
 	}
 	job->setProperty(constQuery, queryString.join("/"));
 	DBUG << url.toString();
-	connect(job, SIGNAL(finished()), this, SLOT(parseResponse()));
+	connect(job, &NetworkJob::finished, this, qOverload<>(&LastFmEngine::parseResponse));
 }
 
 void LastFmEngine::parseResponse()

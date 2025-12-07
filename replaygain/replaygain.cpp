@@ -60,8 +60,8 @@ void ReplayGain::createScanner(int index)
 {
 	TrackScanner* s = new TrackScanner(index);
 	s->setFile(files.at(index));
-	connect(s, SIGNAL(progress(int)), this, SLOT(scannerProgress(int)));
-	connect(s, SIGNAL(done()), this, SLOT(scannerDone()));
+	connect(s, &TrackScanner::progress, this, &ReplayGain::scannerProgress);
+	connect(s, &TrackScanner::done, this, &ReplayGain::scannerDone);
 	scanners.insert(index, s);
 	JobController::self()->add(s);
 }

@@ -108,28 +108,27 @@ SongView::SongView(QWidget* p)
 
 	scrollAction->setCheckable(true);
 	scrollAction->setChecked(Settings::self()->contextAutoScroll());
-	connect(scrollAction, SIGNAL(toggled(bool)), SLOT(toggleScroll()));
-	connect(refreshAction, SIGNAL(triggered()), SLOT(update()));
-	connect(editAction, SIGNAL(triggered()), SLOT(edit()));
-	connect(delAction, SIGNAL(triggered()), SLOT(del()));
-	connect(UltimateLyrics::self(), SIGNAL(lyricsReady(int, QString)), SLOT(lyricsReady(int, QString)));
+	connect(scrollAction, &Action::toggled, this, &SongView::toggleScroll);
+	connect(refreshAction, &Action::triggered, this, qOverload<>(&SongView::update));
+	connect(editAction, &Action::triggered, this, &SongView::edit);
+	connect(delAction, &Action::triggered, this, &SongView::del);
+	connect(UltimateLyrics::self(), &UltimateLyrics::lyricsReady, this, &SongView::lyricsReady);
 
 	engine = ContextEngine::create(this);
 	refreshInfoAction = ActionCollection::get()->createAction("refreshtrack", tr("Refresh Track Information"), Icons::self()->refreshIcon);
-	cancelInfoJobAction = new Action(Icons::self()->cancelIcon, tr("Cancel"), this);
+	cancelInfoJobAction = new Action(Icons::self()->cancelIcon, tr("Cancel"), this, this, &SongView::abortInfoSearch);
 	cancelInfoJobAction->setEnabled(false);
-	connect(refreshInfoAction, SIGNAL(triggered()), SLOT(refreshInfo()));
-	connect(cancelInfoJobAction, SIGNAL(triggered()), SLOT(abortInfoSearch()));
-	connect(engine, SIGNAL(searchResult(QString, QString)), this, SLOT(infoSearchResponse(QString, QString)));
+	connect(refreshInfoAction, &Action::triggered, this, &SongView::refreshInfo);
+	connect(engine, &ContextEngine::searchResult, this, &SongView::infoSearchResponse);
 	for (TextBrowser* t : texts) {
-		connect(t, SIGNAL(anchorClicked(QUrl)), SLOT(showMoreInfo(QUrl)));
+		connect(t, &TextBrowser::anchorClicked, this, &SongView::showMoreInfo);
 	}
 
 	text->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(text, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
+	connect(text, &TextBrowser::customContextMenuRequested, this, &SongView::showContextMenu);
 	texts.at(Page_Information)->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(texts.at(Page_Information), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showInfoContextMenu(QPoint)));
-	connect(this, SIGNAL(viewChanged()), this, SLOT(curentViewChanged()));
+	connect(texts.at(Page_Information), &TextBrowser::customContextMenuRequested, this, &SongView::showInfoContextMenu);
+	connect(this, &SongView::viewChanged, this, &SongView::curentViewChanged);
 	setMode(Mode_Blank);
 	setStandardHeader(tr("Track"));
 	clear();
@@ -274,14 +273,14 @@ void SongView::toggleScroll()
 		scrollTimer = new QTimer(this);
 		scrollTimer->setSingleShot(false);
 		scrollTimer->setInterval(1000);
-		connect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(songPosition()));
-		connect(scrollTimer, SIGNAL(timeout()), this, SLOT(scroll()));
+		connect(MPDStatus::self(), &MPDStatus::updated, this, &SongView::songPosition);
+		connect(scrollTimer, &QTimer::timeout, this, &SongView::scroll);
 		scroll();
 	}
 	else {
-		disconnect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(songPosition()));
+		disconnect(MPDStatus::self(), &MPDStatus::updated, this, &SongView::songPosition);
 		if (scrollTimer) {
-			connect(scrollTimer, SIGNAL(timeout()), this, SLOT(scroll()));
+			connect(scrollTimer, &QTimer::timeout, this, &SongView::scroll);
 			scrollTimer->stop();
 		}
 	}
@@ -360,7 +359,7 @@ void SongView::loadLyrics()
 			QUrl url(mpdLyrics);
 			job = NetworkAccessManager::self()->get(url);
 			job->setProperty("file", currentSong.file);
-			connect(job, SIGNAL(finished()), this, SLOT(downloadFinished()));
+			connect(job, &NetworkJob::finished, this, &SongView::downloadFinished);
 			return;
 		}
 	}

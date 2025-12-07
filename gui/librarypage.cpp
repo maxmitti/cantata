@@ -39,15 +39,15 @@ LibraryPage::LibraryPage(QWidget* p)
 	: SinglePageWidget(p)
 {
 	genreCombo = new GenreCombo(this);
-	connect(StdActions::self()->addRandomAlbumToPlayQueueAction, SIGNAL(triggered()), SLOT(addRandomAlbum()));
-	connect(MPDConnection::self(), SIGNAL(updatingLibrary(time_t)), view, SLOT(updating()));
-	connect(MPDConnection::self(), SIGNAL(updatedLibrary()), view, SLOT(updated()));
-	connect(MPDConnection::self(), SIGNAL(updatingDatabase()), view, SLOT(updating()));
-	connect(MPDConnection::self(), SIGNAL(updatedDatabase()), view, SLOT(updated()));
-	connect(view, SIGNAL(itemsSelected(bool)), this, SLOT(controlActions()));
-	connect(view, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(itemDoubleClicked(const QModelIndex&)));
+	connect(StdActions::self()->addRandomAlbumToPlayQueueAction, &Action::triggered, this, &LibraryPage::addRandomAlbum);
+	connect(MPDConnection::self(), &MPDConnection::updatingLibrary, view, &ItemView::updating);
+	connect(MPDConnection::self(), &MPDConnection::updatedLibrary, view, &ItemView::updated);
+	connect(MPDConnection::self(), &MPDConnection::updatingDatabase, view, &ItemView::updating);
+	connect(MPDConnection::self(), &MPDConnection::updatedDatabase, view, &ItemView::updated);
+	connect(view, &ItemView::itemsSelected, this, &LibraryPage::controlActions);
+	connect(view, &ItemView::doubleClicked, this, &LibraryPage::itemDoubleClicked);
 	view->setModel(MpdLibraryModel::self());
-	connect(MpdLibraryModel::self(), SIGNAL(modelReset()), this, SLOT(modelReset()));
+	connect(MpdLibraryModel::self(), &MpdLibraryModel::modelReset, this, &LibraryPage::modelReset);
 
 	view->allowCategorized();
 	// Settings...
@@ -66,9 +66,9 @@ LibraryPage::LibraryPage(QWidget* p)
 	showArtistImagesAction = new QAction(tr("Show Artist Images"), this);
 	showArtistImagesAction->setCheckable(true);
 	libraryAlbumSortAction = createMenuGroup(tr("Sort Albums"), QList<MenuItem>() << MenuItem(tr("Name"), LibraryDb::AS_AlArYr) << MenuItem(tr("Year"), LibraryDb::AS_YrAlAr),
-	                                         MpdLibraryModel::self()->libraryAlbumSort(), this, SLOT(libraryAlbumSortChanged()));
+	                                         MpdLibraryModel::self()->libraryAlbumSort(), this, &LibraryPage::libraryAlbumSortChanged);
 	albumAlbumSortAction = createMenuGroup(tr("Sort Albums"), QList<MenuItem>() << MenuItem(tr("Album, Artist, Year"), LibraryDb::AS_AlArYr) << MenuItem(tr("Album, Year, Artist"), LibraryDb::AS_AlYrAr) << MenuItem(tr("Artist, Album, Year"), LibraryDb::AS_ArAlYr) << MenuItem(tr("Artist, Year, Album"), LibraryDb::AS_ArYrAl) << MenuItem(tr("Year, Album, Artist"), LibraryDb::AS_YrAlAr) << MenuItem(tr("Year, Artist, Album"), LibraryDb::AS_YrArAl) << MenuItem(tr("Modified Date"), LibraryDb::AS_Modified),
-	                                       MpdLibraryModel::self()->albumAlbumSort(), this, SLOT(albumAlbumSortChanged()));
+	                                       MpdLibraryModel::self()->albumAlbumSort(), this, &LibraryPage::albumAlbumSortChanged);
 
 	MenuButton* menu = new MenuButton(this);
 	viewAction = createViewMenu(QList<ItemView::Mode>() << ItemView::Mode_BasicTree << ItemView::Mode_SimpleTree
@@ -77,20 +77,20 @@ LibraryPage::LibraryPage(QWidget* p)
 	menu->addAction(viewAction);
 
 	menu->addAction(createMenuGroup(tr("Group By"), QList<MenuItem>() << MenuItem(tr("Genre"), SqlLibraryModel::T_Genre) << MenuItem(tr("Artist"), SqlLibraryModel::T_Artist) << MenuItem(tr("Album"), SqlLibraryModel::T_Album),
-	                                MpdLibraryModel::self()->topLevel(), this, SLOT(groupByChanged())));
+	                                MpdLibraryModel::self()->topLevel(), this, &LibraryPage::groupByChanged));
 	genreCombo->setVisible(SqlLibraryModel::T_Genre != MpdLibraryModel::self()->topLevel());
 
 	menu->addAction(libraryAlbumSortAction);
 	menu->addAction(albumAlbumSortAction);
 	showArtistImagesAction->setChecked(MpdLibraryModel::self()->useArtistImages());
 	menu->addAction(showArtistImagesAction);
-	connect(showArtistImagesAction, SIGNAL(toggled(bool)), this, SLOT(showArtistImagesChanged(bool)));
+	connect(showArtistImagesAction, &QAction::toggled, this, &LibraryPage::showArtistImagesChanged);
 	showArtistImagesAction->setVisible(SqlLibraryModel::T_Album != MpdLibraryModel::self()->topLevel() && ItemView::Mode_IconTop != view->viewMode());
 	albumAlbumSortAction->setVisible(SqlLibraryModel::T_Album == MpdLibraryModel::self()->topLevel());
 	libraryAlbumSortAction->setVisible(SqlLibraryModel::T_Album != MpdLibraryModel::self()->topLevel());
 	genreCombo->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 	init(ReplacePlayQueue | AppendToPlayQueue, QList<QWidget*>() << menu << genreCombo);
-	connect(genreCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(doSearch()));
+	connect(genreCombo, &GenreCombo::currentIndexChanged, this, &LibraryPage::doSearch);
 	view->addAction(StdActions::self()->addToStoredPlaylistAction);
 	view->addAction(CustomActions::self());
 #ifdef TagLib_FOUND
@@ -108,7 +108,7 @@ LibraryPage::LibraryPage(QWidget* p)
 	view->addAction(StdActions::self()->deleteSongsAction);
 #endif
 #endif// TagLib_FOUND
-	connect(view, SIGNAL(updateToPlayQueue(QModelIndex, bool)), this, SLOT(updateToPlayQueue(QModelIndex, bool)));
+	connect(view, &ItemView::updateToPlayQueue, this, &LibraryPage::updateToPlayQueue);
 	view->setOpenAfterSearch(SqlLibraryModel::T_Album != MpdLibraryModel::self()->topLevel());
 	view->setInfoText(tr("No music? Looks like your MPD is not configured correctly."));
 

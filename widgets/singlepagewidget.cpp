@@ -58,10 +58,10 @@ SinglePageWidget::SinglePageWidget(QWidget* p)
 	layout->addWidget(sizer, 2, 2, 1, 1);
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
-	connect(view, SIGNAL(searchItems()), this, SIGNAL(searchItems()));
-	connect(view, SIGNAL(itemsSelected(bool)), this, SLOT(controlActions()));
-	connect(this, SIGNAL(add(const QStringList&, int, quint8, bool)), MPDConnection::self(), SLOT(add(const QStringList&, int, quint8, bool)));
-	connect(this, SIGNAL(addSongsToPlaylist(const QString&, const QStringList&)), MPDConnection::self(), SLOT(addToPlaylist(const QString&, const QStringList&)));
+	connect(view, &ItemView::searchItems, this, &SinglePageWidget::searchItems);
+	connect(view, &ItemView::itemsSelected, this, &SinglePageWidget::controlActions);
+	connect(this, &SinglePageWidget::add, MPDConnection::self(), qOverload<const QStringList&, int, quint8, bool>(&MPDConnection::add));
+	connect(this, &SinglePageWidget::addSongsToPlaylist, MPDConnection::self(), qOverload<const QString&, const QStringList&>(&MPDConnection::addToPlaylist));
 }
 
 void SinglePageWidget::addWidget(QWidget* w)
@@ -104,11 +104,11 @@ void SinglePageWidget::init(int flags, const QList<QWidget*>& leftXtra, const QL
 		ToolButton* refreshButton = new ToolButton(this);
 		refreshAction = new Action(Icons::self()->reloadIcon, tr("Refresh"), this);
 		refreshButton->setDefaultAction(refreshAction);
-		connect(refreshAction, SIGNAL(triggered()), this, SLOT(refresh()));
+		connect(refreshAction, &Action::triggered, this, &SinglePageWidget::refresh);
 		left.append(refreshButton);
 	}
 
-	connect(this, SIGNAL(searchItems()), this, SLOT(doSearch()));
+	connect(this, &SinglePageWidget::searchItems, this, &SinglePageWidget::doSearch);
 
 	if (!left.isEmpty()) {
 		QHBoxLayout* ll = new QHBoxLayout();
@@ -162,22 +162,6 @@ void SinglePageWidget::hideEvent(QHideEvent* e)
 
 const char* SinglePageWidget::constValProp = "val";
 
-QList<QAction*> SinglePageWidget::createActions(const QList<SinglePageWidget::MenuItem>& values, int currentVal, QWidget* parent, const char* slot)
-{
-	QList<QAction*> actions;
-	QActionGroup* group = new QActionGroup(parent);
-	for (const MenuItem& v : values) {
-		QAction* act = new QAction(v.first, parent);
-		connect(act, SIGNAL(toggled(bool)), parent, slot);
-		act->setActionGroup(group);
-		act->setProperty(constValProp, v.second);
-		act->setCheckable(true);
-		act->setChecked(v.second == currentVal);
-		actions.append(act);
-	}
-	return actions;
-}
-
 Action* SinglePageWidget::createMenuGroup(const QString& name, const QList<QAction*> actions, QWidget* parent)
 {
 	Action* action = new Action(name, parent);
@@ -187,11 +171,6 @@ Action* SinglePageWidget::createMenuGroup(const QString& name, const QList<QActi
 	return action;
 }
 
-Action* SinglePageWidget::createMenuGroup(const QString& name, const QList<SinglePageWidget::MenuItem>& values, int currentVal, QWidget* parent, const char* slot)
-{
-	return createMenuGroup(name, createActions(values, currentVal, parent, slot), parent);
-}
-
 QList<QAction*> SinglePageWidget::createViewActions(QList<ItemView::Mode> modes)
 {
 	QList<QPair<QString, int>> vals;
@@ -199,7 +178,7 @@ QList<QAction*> SinglePageWidget::createViewActions(QList<ItemView::Mode> modes)
 		if (m != ItemView::Mode_Categorized)
 			vals.append(MenuItem(viewTypeString(m), m));
 	}
-	return createActions(vals, view->viewMode(), this, SLOT(viewModeSelected()));
+	return createActions(vals, view->viewMode(), this, &SinglePageWidget::viewModeSelected);
 }
 
 Action* SinglePageWidget::createViewMenu(QList<ItemView::Mode> modes)

@@ -65,8 +65,8 @@ LyricsDialog::LyricsDialog(const Song& s, QWidget* parent)
 	setMainWidget(mw);
 	setButtons(Ok | Cancel);
 	enableButton(Ok, false);
-	connect(titleEntry, SIGNAL(textChanged(const QString&)), SLOT(changed()));
-	connect(artistEntry, SIGNAL(textChanged(const QString&)), SLOT(changed()));
+	connect(titleEntry, &LineEdit::textChanged, this, &LyricsDialog::changed);
+	connect(artistEntry, &LineEdit::textChanged, this, &LyricsDialog::changed);
 	titleEntry->setFocus();
 	titleEntry->setText(s.title);
 	artistEntry->setText(s.artist);

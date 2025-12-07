@@ -316,7 +316,7 @@ bool TagHelperIface::startHelper()
 		proc->setProcessChannelMode(QProcess::ForwardedChannels);
 		proc->start(Utils::helper(QLatin1String("cantata-tags")), QStringList() << server->fullServerName() << QString::number(currentPid) << QString(debugEnabled ? "true" : "false"));
 
-		connect(proc, SIGNAL(finished(int)), this, SLOT(helperClosed()));
+		connect(proc, &QProcess::finished, this, &TagHelperIface::helperClosed);
 		if (proc->waitForStarted(constMaxWait)) {
 			DBUG << "Process started, on pid" << proc->processId() << "- wait for helper to connect";
 			if (server->waitForNewConnection(constMaxWait)) {
@@ -324,8 +324,8 @@ bool TagHelperIface::startHelper()
 			}
 			if (sock) {
 				DBUG << "Helper connected";
-				connect(sock, SIGNAL(readyRead()), this, SLOT(dataReady()));
-				connect(sock, SIGNAL(disconnected()), this, SLOT(helperClosed()));
+				connect(sock, &QLocalSocket::readyRead, this, &TagHelperIface::dataReady);
+				connect(sock, &QLocalSocket::disconnected, this, &TagHelperIface::helperClosed);
 				return true;
 			}
 			else {
@@ -353,8 +353,8 @@ void TagHelperIface::stopHelper()
 {
 	if (sock) {
 		DBUG << "Socket" << (void*)sock;
-		disconnect(sock, SIGNAL(readyRead()), this, SLOT(dataReady()));
-		disconnect(sock, SIGNAL(disconnected()), this, SLOT(helperClosed()));
+		disconnect(sock, &QLocalSocket::readyRead, this, &TagHelperIface::dataReady);
+		disconnect(sock, &QLocalSocket::disconnected, this, &TagHelperIface::helperClosed);
 		sock->flush();
 		sock->close();
 		sock->deleteLater();
@@ -367,7 +367,7 @@ void TagHelperIface::stopHelper()
 		server = nullptr;
 	}
 	if (proc) {
-		disconnect(proc, SIGNAL(finished(int)), this, SLOT(helperClosed()));
+		disconnect(proc, &QProcess::finished, this, &TagHelperIface::helperClosed);
 		DBUG << "Process" << (void*)proc;
 		if (QProcess::NotRunning != proc->state()) {
 			proc->kill();
