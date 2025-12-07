@@ -44,10 +44,10 @@ GLOBAL_STATIC(MpdLibraryModel, instance)
 MpdLibraryModel::MpdLibraryModel()
 	: SqlLibraryModel(new MpdLibraryDb(nullptr), nullptr), showArtistImages(false)
 {
-	connect(Covers::self(), SIGNAL(cover(Song, QImage, QString)), this, SLOT(cover(Song, QImage, QString)));
-	connect(Covers::self(), SIGNAL(coverUpdated(Song, QImage, QString)), this, SLOT(coverUpdated(Song, QImage, QString)));
-	connect(Covers::self(), SIGNAL(artistImage(Song, QImage, QString)), this, SLOT(artistImage(Song, QImage, QString)));
-	connect(Covers::self(), SIGNAL(composerImage(Song, QImage, QString)), this, SLOT(artistImage(Song, QImage, QString)));
+	connect(Covers::self(), &Covers::cover, this, &MpdLibraryModel::cover);
+	connect(Covers::self(), &Covers::coverUpdated, this, &MpdLibraryModel::coverUpdated);
+	connect(Covers::self(), &Covers::artistImage, this, &MpdLibraryModel::artistImage);
+	connect(Covers::self(), &Covers::composerImage, this, &MpdLibraryModel::artistImage);
 	if (MPDConnection::self()->isConnected()) {
 		static_cast<MpdLibraryDb*>(db)->connectionChanged(MPDConnection::self()->getDetails());
 	}
@@ -179,7 +179,7 @@ void MpdLibraryModel::listSongs()
 	listingTotal = db->trackCount();
 	listingCurrent = 0;
 	if (listingTotal > 0) {
-		QTimer::singleShot(0, this, SLOT(listNextChunk()));
+		QTimer::singleShot(0, this, &MpdLibraryModel::listNextChunk);
 	}
 	else {
 		emit songListing(QList<Song>(), 100.0);
@@ -207,7 +207,7 @@ void MpdLibraryModel::listNextChunk()
 			emit songListing(QList<Song>(), 100.0);
 		}
 		else {
-			QTimer::singleShot(0, this, SLOT(listNextChunk()));
+			QTimer::singleShot(0, this, &MpdLibraryModel::listNextChunk);
 		}
 	}
 }

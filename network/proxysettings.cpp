@@ -32,7 +32,7 @@ ProxySettings::ProxySettings(QWidget* parent)
 	proxyMode->addItem(tr("No proxy"), (int)NetworkProxyFactory::Mode_Direct);
 	proxyMode->addItem(tr("Use the system proxy settings"), (int)NetworkProxyFactory::Mode_System);
 	proxyMode->addItem(tr("Manual proxy configuration"), (int)NetworkProxyFactory::Mode_Manual);
-	connect(proxyMode, SIGNAL(currentIndexChanged(int)), SLOT(toggleMode()));
+	connect(proxyMode, &QComboBox::currentIndexChanged, this, &ProxySettings::toggleMode);
 }
 
 ProxySettings::~ProxySettings()

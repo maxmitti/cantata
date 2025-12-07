@@ -39,14 +39,14 @@ MpdBrowsePage::MpdBrowsePage(QWidget* p)
 	: SinglePageWidget(p), model(this)
 {
 	browseAction = new Action(Icon::fa(fa::fa_solid, fa::fa_folder_open), tr("Open In File Manager"), this);
-	connect(view, SIGNAL(itemsSelected(bool)), this, SLOT(controlActions()));
-	connect(view, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(itemDoubleClicked(const QModelIndex&)));
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
-	connect(browseAction, SIGNAL(triggered()), this, SLOT(openFileManager()));
-	connect(MPDConnection::self(), SIGNAL(updatingFileList()), view, SLOT(updating()));
-	connect(MPDConnection::self(), SIGNAL(updatedFileList()), view, SLOT(updated()));
-	connect(MPDConnection::self(), SIGNAL(updatingDatabase()), view, SLOT(updating()));
-	connect(MPDConnection::self(), SIGNAL(updatedDatabase()), view, SLOT(updated()));
+	connect(view, &ItemView::itemsSelected, this, &MpdBrowsePage::controlActions);
+	connect(view, &ItemView::doubleClicked, this, &MpdBrowsePage::itemDoubleClicked);
+	connect(view, &ItemView::headerClicked, this, &MpdBrowsePage::headerClicked);
+	connect(browseAction, &Action::triggered, this, &MpdBrowsePage::openFileManager);
+	connect(MPDConnection::self(), &MPDConnection::updatingFileList, view, &ItemView::updating);
+	connect(MPDConnection::self(), &MPDConnection::updatedFileList, view, &ItemView::updated);
+	connect(MPDConnection::self(), &MPDConnection::updatingDatabase, view, &ItemView::updating);
+	connect(MPDConnection::self(), &MPDConnection::updatedDatabase, view, &ItemView::updated);
 	Configuration config(metaObject()->className());
 	view->setMode(ItemView::Mode_DetailedTree);
 	view->load(config);
@@ -75,7 +75,7 @@ MpdBrowsePage::MpdBrowsePage(QWidget* p)
 	view->setModel(&model);
 	view->closeSearch();
 	view->alwaysShowHeader();
-	connect(view, SIGNAL(updateToPlayQueue(QModelIndex, bool)), this, SLOT(updateToPlayQueue(QModelIndex, bool)));
+	connect(view, &ItemView::updateToPlayQueue, this, &MpdBrowsePage::updateToPlayQueue);
 	view->setInfoText(tr("No folders? Looks like your MPD is not configured correctly."));
 }
 

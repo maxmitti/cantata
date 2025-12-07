@@ -322,12 +322,12 @@ CoverDialog::CoverDialog(QWidget* parent)
 	setAttribute(Qt::WA_DeleteOnClose);
 	setButtons(Cancel | Ok);
 	enableButton(Ok, false);
-	connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), SLOT(showImage(QListWidgetItem*)));
-	connect(list, SIGNAL(itemSelectionChanged()), SLOT(checkStatus()));
-	connect(search, SIGNAL(clicked()), SLOT(sendQuery()));
-	connect(query, SIGNAL(returnPressed()), SLOT(sendQuery()));
-	connect(addFileButton, SIGNAL(clicked()), SLOT(addLocalFile()));
-	connect(list, SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(menuRequested(const QPoint&)));
+	connect(list, &QListWidget::itemDoubleClicked, this, qOverload<QListWidgetItem*>(&CoverDialog::showImage));
+	connect(list, &QListWidget::itemSelectionChanged, this, &CoverDialog::checkStatus);
+	connect(search, &QPushButton::clicked, this, &CoverDialog::sendQuery);
+	connect(query, &LineEdit::returnPressed, this, &CoverDialog::sendQuery);
+	connect(addFileButton, &FlatToolButton::clicked, this, &CoverDialog::addLocalFile);
+	connect(list, &QListWidget::customContextMenuRequested, this, &CoverDialog::menuRequested);
 
 	QFont f(list->font());
 	QFontMetrics origFm(f);
@@ -608,7 +608,7 @@ void CoverDialog::showImage(QListWidgetItem* item)
 		NetworkJob* j = downloadImage(cover->url(), DL_LargePreview);
 		if (j) {
 			j->setProperty(constLargeProperty, cover->url());
-			connect(j, SIGNAL(downloadProgress(qint64, qint64)), preview, SLOT(progress(qint64, qint64)));
+			connect(j, &NetworkJob::downloadProgress, preview, &CoverPreview::progress);
 		}
 	}
 }
@@ -803,8 +803,8 @@ void CoverDialog::menuRequested(const QPoint& pos)
 		menu = new QMenu(list);
 		showAction = menu->addAction(tr("Display"));
 		removeAction = menu->addAction(tr("Remove"));
-		connect(showAction, SIGNAL(triggered()), SLOT(showImage()));
-		connect(removeAction, SIGNAL(triggered()), SLOT(removeImages()));
+		connect(showAction, &QAction::triggered, this, qOverload<>(&CoverDialog::showImage));
+		connect(removeAction, &QAction::triggered, this, &CoverDialog::removeImages);
 	}
 
 	QList<QListWidgetItem*> items = list->selectedItems();
@@ -850,7 +850,7 @@ void CoverDialog::sendQueryRequest(const QUrl& url, const QString& host)
 	NetworkJob* j = NetworkAccessManager::self()->get(QNetworkRequest(url));
 	j->setProperty(constHostProperty, host.isEmpty() ? url.host() : host);
 	j->setProperty(constTypeProperty, (int)DL_Query);
-	connect(j, SIGNAL(finished()), this, SLOT(queryJobFinished()));
+	connect(j, &NetworkJob::finished, this, &CoverDialog::queryJobFinished);
 	currentQuery.insert(j);
 }
 
@@ -892,12 +892,12 @@ NetworkJob* CoverDialog::downloadImage(const QString& url, DownloadType dlType)
 	}
 
 	NetworkJob* j = NetworkAccessManager::self()->get(QNetworkRequest(QUrl(url)));
-	connect(j, SIGNAL(finished()), this, SLOT(downloadJobFinished()));
+	connect(j, &NetworkJob::finished, this, &CoverDialog::downloadJobFinished);
 	currentQuery.insert(j);
 	j->setProperty(constTypeProperty, (int)dlType);
 	if (saving) {
 		previewDialog()->downloading(url);
-		connect(j, SIGNAL(downloadProgress(qint64, qint64)), preview, SLOT(progress(qint64, qint64)));
+		connect(j, &NetworkJob::downloadProgress, preview, &CoverPreview::progress);
 	}
 	return j;
 }
@@ -1295,7 +1295,7 @@ void CoverDialog::setSearching(bool s)
 	if (!msgOverlay) {
 		msgOverlay = new MessageOverlay(this);
 		msgOverlay->setWidget(list);
-		connect(msgOverlay, SIGNAL(cancel()), SLOT(cancelQuery()));
+		connect(msgOverlay, &MessageOverlay::cancel, this, &CoverDialog::cancelQuery);
 	}
 	if (s) {
 		spinner->start();

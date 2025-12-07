@@ -207,7 +207,7 @@ void StreamSearchModel::fetchMore(const QModelIndex& index)
 			emit loading();
 		}
 		jobs.insert(job, cat);
-		connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
+		connect(job, &NetworkJob::finished, this, &StreamSearchModel::jobFinished);
 		cat->state = StreamsModel::CategoryItem::Fetching;
 		emit dataChanged(index, index);
 	}
@@ -298,7 +298,7 @@ void StreamSearchModel::search(const QString& searchTerm, bool stationsOnly)
 			emit loading();
 		}
 		jobs.insert(job, static_cast<StreamsModel::CategoryItem*>(item));
-		connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
+		connect(job, &NetworkJob::finished, this, &StreamSearchModel::jobFinished);
 	}
 }
 

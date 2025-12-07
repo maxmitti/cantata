@@ -247,7 +247,7 @@ void UltimateLyricsProvider::fetchInfo(int id, Song metadata, bool removeThe)
 
 		NetworkJob* reply = NetworkAccessManager::self()->get(url);
 		requests[reply] = id;
-		connect(reply, SIGNAL(finished()), this, SLOT(wikiMediaSearchResponse()));
+		connect(reply, &NetworkJob::finished, this, &UltimateLyricsProvider::wikiMediaSearchResponse);
 		return;
 	}
 
@@ -287,7 +287,7 @@ void UltimateLyricsProvider::fetchInfo(int id, Song metadata, bool removeThe)
 	req.setRawHeader("User-Agent", "Mozilla/5.0 (X11; Linux i686; rv:6.0) Gecko/20100101 Firefox/6.0");
 	NetworkJob* reply = NetworkAccessManager::self()->get(req);
 	requests[reply] = id;
-	connect(reply, SIGNAL(finished()), this, SLOT(lyricsFetched()));
+	connect(reply, &NetworkJob::finished, this, &UltimateLyricsProvider::lyricsFetched);
 }
 
 void UltimateLyricsProvider::abort()
@@ -342,7 +342,7 @@ void UltimateLyricsProvider::wikiMediaSearchResponse()
 		QByteArray titles = QUrl::toPercentEncoding(path.startsWith(QLatin1Char('/')) ? path.mid(1) : path).replace('+', "%2b");
 		NetworkJob* reply = NetworkAccessManager::self()->get(QUrl::fromEncoded(u + titles));
 		requests[reply] = id;
-		connect(reply, SIGNAL(finished()), this, SLOT(wikiMediaLyricsFetched()));
+		connect(reply, &NetworkJob::finished, this, &UltimateLyricsProvider::wikiMediaLyricsFetched);
 	}
 	else {
 		emit lyricsReady(id, QString());

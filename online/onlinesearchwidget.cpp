@@ -37,8 +37,8 @@ OnlineSearchWidget::OnlineSearchWidget(OnlineSearchService* s, QWidget* p)
 	view->alwaysShowHeader();
 	view->setPermanentSearch();
 	view->setMode(ItemView::Mode_List);
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
-	connect(srv, SIGNAL(statsUpdated(int, quint32)), this, SLOT(statsUpdated(int, quint32)));
+	connect(view, &ItemView::headerClicked, this, &OnlineSearchWidget::headerClicked);
+	connect(srv, &OnlineSearchService::statsUpdated, this, &OnlineSearchWidget::statsUpdated);
 	statsUpdated(0, 0);
 }
 

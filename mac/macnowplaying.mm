@@ -47,8 +47,8 @@ MacNowPlaying::MacNowPlaying(QObject *p)
     : QObject(p)
     , pimpl(new impl())
 {
-    connect(this, SIGNAL(setSeekId(qint32, quint32)), MPDConnection::self(), SLOT(setSeekId(qint32, quint32)));
-    connect(CurrentCover::self(), SIGNAL(coverFile(const QString &)), this, SLOT(updateCurrentCover(const QString &)));
+    connect(this, &MacNowPlaying::setSeekId, MPDConnection::self(), &MPDConnection::setSeekId);
+    connect(CurrentCover::self(), &CurrentCover::coverFile, this, &MacNowPlaying::updateCurrentCover);
 
     MPRemoteCommandCenter *commandCenter = [MPRemoteCommandCenter sharedCommandCenter];
 

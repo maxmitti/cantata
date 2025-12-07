@@ -80,8 +80,8 @@ Q_DECL_UNUSED static Action* copyAction(Action* orig)
 	Action* newAction = new Action(orig->parent());
 	newAction->setText(Utils::strippedText(orig->text()));
 	newAction->setIcon(orig->icon());
-	QObject::connect(newAction, SIGNAL(triggered()), orig, SIGNAL(triggered()));
-	QObject::connect(newAction, SIGNAL(triggered(bool)), orig, SIGNAL(triggered(bool)));
+	QObject::connect(newAction, &Action::triggered, orig, &Action::triggered);
+	QObject::connect(newAction, &Action::triggered, orig, &Action::triggered);
 	return newAction;
 }
 
@@ -165,7 +165,7 @@ void TrayItem::setup()
 	trayItem->setIcon(icon);
 	trayItem->setToolTip(tr("Cantata"));
 	trayItem->show();
-	connect(trayItem, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayItemClicked(QSystemTrayIcon::ActivationReason)));
+	connect(trayItem, &QSystemTrayIcon::activated, this, &TrayItem::trayItemClicked);
 #endif
 }
 

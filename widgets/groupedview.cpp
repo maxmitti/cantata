@@ -483,7 +483,7 @@ GroupedView::GroupedView(QWidget* parent, bool isPlayQueue)
 	setRootIsDecorated(false);
 	setSelectionBehavior(SelectRows);
 	setForceSingleColumn(true);
-	connect(this, SIGNAL(clicked(const QModelIndex&)), this, SLOT(itemClicked(const QModelIndex&)));
+	connect(this, &GroupedView::clicked, this, &GroupedView::itemClicked);
 	GroupedViewDelegate* delegate = new GroupedViewDelegate(this);
 	setItemDelegate(delegate);
 	if (isPlayQueue) {
@@ -504,11 +504,11 @@ void GroupedView::setModel(QAbstractItemModel* model)
 		if (startClosed) {
 			updateCollectionRows();
 		}
-		connect(Covers::self(), SIGNAL(loaded(Song, int)), this, SLOT(coverLoaded(Song, int)));
+		connect(Covers::self(), qOverload<const Song&, int>(&Covers::loaded), this, qOverload<const Song&, int>(&GroupedView::coverLoaded));
 	}
 	else {
 		controlledAlbums.clear();
-		disconnect(Covers::self(), SIGNAL(loaded(Song, int)), this, SLOT(coverLoaded(Song, int)));
+		disconnect(Covers::self(), qOverload<const Song&, int>(&Covers::loaded), this, qOverload<const Song&, int>(&GroupedView::coverLoaded));
 	}
 }
 

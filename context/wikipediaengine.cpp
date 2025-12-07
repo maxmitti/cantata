@@ -382,7 +382,7 @@ void WikipediaEngine::requestTitles(const QStringList& query, Mode mode, const Q
 	job->setProperty(constModeProperty, (int)mode);
 	job->setProperty(constQueryProperty, query);
 	DBUG << url.toString();
-	connect(job, SIGNAL(finished()), this, SLOT(parseTitles()));
+	connect(job, &NetworkJob::finished, this, &WikipediaEngine::parseTitles);
 }
 
 void WikipediaEngine::parseTitles()
@@ -573,7 +573,7 @@ void WikipediaEngine::getPage(const QStringList& query, Mode mode, const QString
 	job->setProperty(constModeProperty, (int)mode);
 	job->setProperty(constQueryProperty, query);
 	DBUG << url.toString();
-	connect(job, SIGNAL(finished()), this, SLOT(parsePage()));
+	connect(job, &NetworkJob::finished, this, &WikipediaEngine::parsePage);
 }
 
 void WikipediaEngine::parsePage()

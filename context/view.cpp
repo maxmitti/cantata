@@ -105,8 +105,8 @@ View::View(QWidget* parent, const QStringList& views)
 			stack->addWidget(t);
 			texts.append(t);
 		}
-		connect(selector, SIGNAL(activated(int)), stack, SLOT(setCurrentIndex(int)));
-		connect(selector, SIGNAL(activated(int)), this, SIGNAL(viewChanged()));
+		connect(selector, &SelectorLabel::activated, stack, &QStackedWidget::setCurrentIndex);
+		connect(selector, &SelectorLabel::activated, this, &View::viewChanged);
 	}
 
 	header->setWordWrap(true);
@@ -130,7 +130,7 @@ View::View(QWidget* parent, const QStringList& views)
 
 	cancelJobAction = new Action(Icons::self()->cancelIcon, tr("Cancel"), this);
 	cancelJobAction->setEnabled(false);
-	connect(cancelJobAction, SIGNAL(triggered()), SLOT(abort()));
+	connect(cancelJobAction, &Action::triggered, this, &View::abort);
 	text = texts.at(0);
 	setMinimumWidth(Utils::scaleForDpi(300));
 }

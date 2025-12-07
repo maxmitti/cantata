@@ -74,7 +74,7 @@ void RemoteDevicePropertiesWidget::update(const RemoteFsDevice::Details& d, bool
 
 	name->setEnabled(d.isLocalFile() || !isConnected);
 
-	connect(type, SIGNAL(currentIndexChanged(int)), this, SLOT(setType()));
+	connect(type, &QComboBox::currentIndexChanged, this, &RemoteDevicePropertiesWidget::setType);
 	for (int i = 1; i < type->count(); ++i) {
 		if (type->itemData(i).toInt() == t) {
 			type->setCurrentIndex(i);
@@ -82,13 +82,13 @@ void RemoteDevicePropertiesWidget::update(const RemoteFsDevice::Details& d, bool
 			break;
 		}
 	}
-	connect(name, SIGNAL(textChanged(const QString&)), this, SLOT(checkSaveable()));
-	connect(sshHost, SIGNAL(textChanged(const QString&)), this, SLOT(checkSaveable()));
-	connect(sshUser, SIGNAL(textChanged(const QString&)), this, SLOT(checkSaveable()));
-	connect(sshFolder, SIGNAL(textChanged(const QString&)), this, SLOT(checkSaveable()));
-	connect(sshPort, SIGNAL(valueChanged(int)), this, SLOT(checkSaveable()));
-	connect(sshExtra, SIGNAL(textChanged(const QString&)), this, SLOT(checkSaveable()));
-	connect(fileFolder, SIGNAL(textChanged(const QString&)), this, SLOT(checkSaveable()));
+	connect(name, &LineEdit::textChanged, this, &RemoteDevicePropertiesWidget::checkSaveable);
+	connect(sshHost, &LineEdit::textChanged, this, &RemoteDevicePropertiesWidget::checkSaveable);
+	connect(sshUser, &LineEdit::textChanged, this, &RemoteDevicePropertiesWidget::checkSaveable);
+	connect(sshFolder, &LineEdit::textChanged, this, &RemoteDevicePropertiesWidget::checkSaveable);
+	connect(sshPort, &QSpinBox::valueChanged, this, &RemoteDevicePropertiesWidget::checkSaveable);
+	connect(sshExtra, &LineEdit::textChanged, this, &RemoteDevicePropertiesWidget::checkSaveable);
+	connect(fileFolder, &PathRequester::textChanged, this, &RemoteDevicePropertiesWidget::checkSaveable);
 	modified = false;
 	setType();
 	checkSaveable();

@@ -89,7 +89,7 @@ WikipediaSettings::WikipediaSettings(QWidget* p)
 {
 	label->setText(tr("Choose the wikipedia languages you want to use when searching for artist and album information."));
 	reload = new Action(tr("Reload"), this);
-	connect(reload, SIGNAL(triggered()), this, SLOT(getLangs()));
+	connect(reload, &Action::triggered, this, &WikipediaSettings::getLangs);
 	available->addAction(reload);
 	available->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
@@ -148,7 +148,7 @@ void WikipediaSettings::save()
 void WikipediaSettings::cancel()
 {
 	if (job) {
-		disconnect(job, SIGNAL(finished()), this, SLOT(parseLangs()));
+		disconnect(job, &NetworkJob::finished, this, qOverload<>(&WikipediaSettings::parseLangs));
 		job->deleteLater();
 		job = nullptr;
 	}
@@ -174,7 +174,7 @@ void WikipediaSettings::getLangs()
 	url.setQuery(q);
 
 	job = NetworkAccessManager::self()->get(url);
-	connect(job, SIGNAL(finished()), this, SLOT(parseLangs()));
+	connect(job, &NetworkJob::finished, this, qOverload<>(&WikipediaSettings::parseLangs));
 }
 
 void WikipediaSettings::parseLangs()
@@ -202,9 +202,9 @@ void WikipediaSettings::parseLangs(const QByteArray& data)
 	prefMap.clear();
 	if (!loader) {
 		loader = new WikipediaLoader();
-		connect(loader, SIGNAL(entry(QString, QString, QString, int)), SLOT(addEntry(QString, QString, QString, int)));
-		connect(loader, SIGNAL(finished()), SLOT(loaderFinished()));
-		connect(this, SIGNAL(load(QByteArray)), loader, SLOT(load(QByteArray)));
+		connect(loader, &WikipediaLoader::entry, this, &WikipediaSettings::addEntry);
+		connect(loader, &WikipediaLoader::finished, this, &WikipediaSettings::loaderFinished);
+		connect(this, qOverload<const QByteArray&>(&WikipediaSettings::load), loader, &WikipediaLoader::load);
 	}
 	emit load(data);
 }

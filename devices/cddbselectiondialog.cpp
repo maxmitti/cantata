@@ -55,7 +55,7 @@ CddbSelectionDialog::CddbSelectionDialog(QWidget* parent)
 	setCaption(tr("Disc Selection"));
 	setMainWidget(wid);
 	setButtons(Ok);
-	connect(combo, SIGNAL(currentIndexChanged(int)), SLOT(updateTracks()));
+	connect(combo, &QComboBox::currentIndexChanged, this, &CddbSelectionDialog::updateTracks);
 }
 
 int CddbSelectionDialog::select(const QList<CdAlbum>& albums)

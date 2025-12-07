@@ -78,12 +78,12 @@ void OSXStyle::initWindowMenu(QMainWindow* mw)
 		addWindow(mw);
 		mw->menuBar()->addMenu(windowMenu);
 		actions[mw]->setChecked(true);
-		connect(qApp, SIGNAL(focusWindowChanged(QWindow*)), SLOT(focusWindowChanged(QWindow*)));
+		connect(qApp, &QGuiApplication::focusWindowChanged, this, &OSXStyle::focusWindowChanged);
 		closeAct->setShortcut(Qt::ControlModifier | Qt::Key_W);
 		minAct->setShortcut(Qt::ControlModifier | Qt::Key_M);
-		connect(closeAct, SIGNAL(triggered()), SLOT(closeWindow()));
-		connect(minAct, SIGNAL(triggered()), SLOT(minimizeWindow()));
-		connect(zoomAct, SIGNAL(triggered()), SLOT(zoomWindow()));
+		connect(closeAct, &QAction::triggered, this, &OSXStyle::closeWindow);
+		connect(minAct, &QAction::triggered, this, &OSXStyle::minimizeWindow);
+		connect(zoomAct, &QAction::triggered, this, &OSXStyle::zoomWindow);
 		controlActions(mw);
 	}
 }
@@ -93,8 +93,8 @@ void OSXStyle::addWindow(QWidget* w)
 	if (w && windowMenu && !actions.contains(w)) {
 		QAction* action = windowMenu->addAction(w->windowTitle());
 		action->setCheckable(true);
-		connect(action, SIGNAL(triggered()), this, SLOT(showWindow()));
-		connect(w, SIGNAL(windowTitleChanged(QString)), this, SLOT(windowTitleChanged()));
+		connect(action, &QAction::triggered, this, &OSXStyle::showWindow);
+		connect(w, &QWidget::windowTitleChanged, this, &OSXStyle::windowTitleChanged);
 		actions.insert(w, action);
 	}
 }
@@ -104,8 +104,8 @@ void OSXStyle::removeWindow(QWidget* w)
 	if (w && windowMenu && actions.contains(w)) {
 		QAction* act = actions.take(w);
 		windowMenu->removeAction(act);
-		disconnect(act, SIGNAL(triggered()), this, SLOT(showWindow()));
-		disconnect(w, SIGNAL(windowTitleChanged(QString)), this, SLOT(windowTitleChanged()));
+		disconnect(act, &QAction::triggered, this, &OSXStyle::showWindow);
+		disconnect(w, &QWidget::windowTitleChanged, this, &OSXStyle::windowTitleChanged);
 		act->deleteLater();
 	}
 }

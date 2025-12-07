@@ -98,7 +98,7 @@ DevicesModel::DevicesModel(QObject* parent)
 	editAction = new Action(Icons::self()->editIcon, tr("Edit CD Details"), this);
 #endif
 	updateItemMenu();
-	connect(this, SIGNAL(add(const QStringList&, int, quint8, bool)), MPDConnection::self(), SLOT(add(const QStringList&, int, quint8, bool)));
+	connect(this, &DevicesModel::add, MPDConnection::self(), qOverload<const QStringList&, int, quint8, bool>(&MPDConnection::add));
 }
 
 DevicesModel::~DevicesModel()
@@ -435,15 +435,15 @@ void DevicesModel::setEnabled(bool e)
 
 	inhibitMenuUpdate = true;
 	if (enabled) {
-		connect(Solid::DeviceNotifier::instance(), SIGNAL(deviceAdded(const QString&)), this, SLOT(deviceAdded(const QString&)));
-		connect(Solid::DeviceNotifier::instance(), SIGNAL(deviceRemoved(const QString&)), this, SLOT(deviceRemoved(const QString&)));
+		connect(Solid::DeviceNotifier::instance(), &Solid::DeviceNotifier::deviceAdded, this, &DevicesModel::deviceAdded);
+		connect(Solid::DeviceNotifier::instance(), &Solid::DeviceNotifier::deviceRemoved, this, &DevicesModel::deviceRemoved);
 #if defined CDDB_FOUND || defined MusicBrainz5_FOUND
-		connect(Covers::self(), SIGNAL(cover(const Song&, const QImage&, const QString&)),
-		        this, SLOT(setCover(const Song&, const QImage&, const QString&)));
+		connect(Covers::self(), &Covers::cover,
+		        this, qOverload<const Song&, const QImage&, const QString&>(&DevicesModel::setCover));
 #endif
 		// Call loadLocal via a timer, so that upon Cantata start-up model is loaded into view before we try and expand items!
-		QTimer::singleShot(0, this, SIGNAL(loadLocal()));
-		connect(MountPoints::self(), SIGNAL(updated()), this, SLOT(mountsChanged()));
+		QTimer::singleShot(0, this, &DevicesModel::loadLocal);
+		connect(MountPoints::self(), &MountPoints::updated, this, &DevicesModel::mountsChanged);
 #ifdef ENABLE_REMOTE_DEVICES
 		loadRemote();
 #endif
@@ -462,13 +462,13 @@ void DevicesModel::stop()
 		static_cast<Device*>(col)->stop();
 	}
 
-	disconnect(Solid::DeviceNotifier::instance(), SIGNAL(deviceAdded(const QString&)), this, SLOT(deviceAdded(const QString&)));
-	disconnect(Solid::DeviceNotifier::instance(), SIGNAL(deviceRemoved(const QString&)), this, SLOT(deviceRemoved(const QString&)));
+	disconnect(Solid::DeviceNotifier::instance(), &Solid::DeviceNotifier::deviceAdded, this, &DevicesModel::deviceAdded);
+	disconnect(Solid::DeviceNotifier::instance(), &Solid::DeviceNotifier::deviceRemoved, this, &DevicesModel::deviceRemoved);
 #if defined CDDB_FOUND || defined MusicBrainz5_FOUND
-	disconnect(Covers::self(), SIGNAL(cover(const Song&, const QImage&, const QString&)),
-	           this, SLOT(setCover(const Song&, const QImage&, const QString&)));
+	disconnect(Covers::self(), &Covers::cover,
+	           this, qOverload<const Song&, const QImage&, const QString&>(&DevicesModel::setCover));
 #endif
-	disconnect(MountPoints::self(), SIGNAL(updated()), this, SLOT(mountsChanged()));
+	disconnect(MountPoints::self(), &MountPoints::updated, this, &DevicesModel::mountsChanged);
 #if defined ENABLE_REMOTE_DEVICES
 	unmountRemote();
 #endif
@@ -604,7 +604,7 @@ void DevicesModel::deviceAdded(const QString& udi)
 		}
 		DBUG << "volume is generic storage";
 		if (!volumes.contains(device.udi())) {
-			connect(ssa, SIGNAL(accessibilityChanged(bool, const QString&)), this, SLOT(accessibilityChanged(bool, const QString&)));
+			connect(ssa, &Solid::StorageAccess::accessibilityChanged, this, &DevicesModel::accessibilityChanged);
 			volumes.insert(device.udi());
 		}
 	}
@@ -631,16 +631,16 @@ void DevicesModel::addLocalDevice(const QString& udi)
 		beginInsertRows(QModelIndex(), collections.count(), collections.count());
 		collections.append(dev);
 		endInsertRows();
-		connect(dev, SIGNAL(updating(const QString&, bool)), SLOT(deviceUpdating(const QString&, bool)));
-		connect(dev, SIGNAL(error(const QString&)), SIGNAL(error(const QString&)));
-		connect(dev, SIGNAL(cover(const Song&, const QImage&)), SLOT(setCover(const Song&, const QImage&)));
-		connect(dev, SIGNAL(updatedDetails(QList<Song>)), SIGNAL(updatedDetails(QList<Song>)));
-		connect(dev, SIGNAL(play(QList<Song>)), SLOT(play(QList<Song>)));
-		connect(dev, SIGNAL(renamed()), this, SLOT(updateItemMenu()));
+		connect(dev, &Device::updating, this, &DevicesModel::deviceUpdating);
+		connect(dev, &Device::error, &Device::error);
+		connect(dev, &Device::cover, this, qOverload<const Song&, const QImage&>(&DevicesModel::setCover));
+		connect(dev, &Device::updatedDetails, &Device::updatedDetails);
+		connect(dev, &Device::play, this, &DevicesModel::play);
+		connect(dev, &Device::renamed, this, &DevicesModel::updateItemMenu);
 #if defined CDDB_FOUND || defined MusicBrainz5_FOUND
 		if (Device::AudioCd == dev->devType()) {
-			connect(static_cast<AudioCdDevice*>(dev), SIGNAL(matches(const QString&, const QList<CdAlbum>&)),
-			        SIGNAL(matches(const QString&, const QList<CdAlbum>&)));
+			connect(static_cast<AudioCdDevice*>(dev), &AudioCdDevice::matches,
+			        &AudioCdDevice::matches);
 			if (!autoplayCd.isEmpty() && static_cast<AudioCdDevice*>(dev)->isAudioDevice(autoplayCd)) {
 				autoplayCd = QString();
 				static_cast<AudioCdDevice*>(dev)->autoplay();
@@ -660,7 +660,7 @@ void DevicesModel::deviceRemoved(const QString& udi)
 			Solid::Device device(udi);
 			Solid::StorageAccess* ssa = device.as<Solid::StorageAccess>();
 			if (ssa) {
-				disconnect(ssa, SIGNAL(accessibilityChanged(bool, const QString&)), this, SLOT(accessibilityChanged(bool, const QString&)));
+				disconnect(ssa, &Solid::StorageAccess::accessibilityChanged, this, &DevicesModel::accessibilityChanged);
 			}
 			volumes.remove(udi);
 		}
@@ -701,11 +701,11 @@ void DevicesModel::addRemoteDevice(const DeviceOptions& opts, RemoteFsDevice::De
 		beginInsertRows(QModelIndex(), collections.count(), collections.count());
 		collections.append(dev);
 		endInsertRows();
-		connect(dev, SIGNAL(updating(const QString&, bool)), SLOT(deviceUpdating(const QString&, bool)));
-		connect(dev, SIGNAL(error(const QString&)), SIGNAL(error(const QString&)));
-		connect(dev, SIGNAL(cover(const Song&, const QImage&)), SLOT(setCover(const Song&, const QImage&)));
+		connect(dev, &Device::updating, this, &DevicesModel::deviceUpdating);
+		connect(dev, &Device::error, &Device::error);
+		connect(dev, &Device::cover, this, qOverload<const Song&, const QImage&>(&DevicesModel::setCover));
 		if (Device::RemoteFs == dev->devType()) {
-			connect(static_cast<RemoteFsDevice*>(dev), SIGNAL(udiChanged()), SLOT(remoteDeviceUdiChanged()));
+			connect(static_cast<RemoteFsDevice*>(dev), &RemoteFsDevice::udiChanged, this, &DevicesModel::remoteDeviceUdiChanged);
 		}
 		updateItemMenu();
 	}
@@ -811,7 +811,7 @@ void DevicesModel::loadLocal()
 				continue;
 			}
 			if (!volumes.contains(device.udi())) {
-				connect(ssa, SIGNAL(accessibilityChanged(bool, const QString&)), this, SLOT(accessibilityChanged(bool, const QString&)));
+				connect(ssa, &Solid::StorageAccess::accessibilityChanged, this, &DevicesModel::accessibilityChanged);
 				volumes.insert(device.udi());
 			}
 			addLocalDevice(device.udi());
@@ -851,11 +851,11 @@ void DevicesModel::loadRemote()
 		beginInsertRows(QModelIndex(), collections.count(), collections.count() + (rem.count() - 1));
 		for (Device* dev : rem) {
 			collections.append(dev);
-			connect(dev, SIGNAL(updating(const QString&, bool)), SLOT(deviceUpdating(const QString&, bool)));
-			connect(dev, SIGNAL(error(const QString&)), SIGNAL(error(const QString&)));
-			connect(dev, SIGNAL(cover(const Song&, const QImage&)), SLOT(setCover(const Song&, const QImage&)));
+			connect(dev, &Device::updating, this, &DevicesModel::deviceUpdating);
+			connect(dev, &Device::error, &Device::error);
+			connect(dev, &Device::cover, this, qOverload<const Song&, const QImage&>(&DevicesModel::setCover));
 			if (Device::RemoteFs == dev->devType()) {
-				connect(static_cast<RemoteFsDevice*>(dev), SIGNAL(udiChanged()), SLOT(remoteDeviceUdiChanged()));
+				connect(static_cast<RemoteFsDevice*>(dev), &RemoteFsDevice::udiChanged, this, &DevicesModel::remoteDeviceUdiChanged);
 			}
 		}
 		endInsertRows();
@@ -920,7 +920,7 @@ void DevicesModel::updateItemMenu()
 
 		for (const QString& k : keys) {
 			const MusicLibraryItemRoot* d = items[k];
-			QAction* act = itemMenu->addAction(d->icon(), k, this, SLOT(emitAddToDevice()));
+			QAction* act = itemMenu->addAction(d->icon(), k, this, &DevicesModel::emitAddToDevice);
 			act->setData(d->id());
 			Action::initIcon(act);
 		}

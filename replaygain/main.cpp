@@ -41,6 +41,6 @@ int main(int argc, char* argv[])
 
 	QCoreApplication app(argc, argv);
 	ReplayGain* rg = new ReplayGain(fileNames);
-	QTimer::singleShot(0, rg, SLOT(scan()));
+	QTimer::singleShot(0, rg, &ReplayGain::scan);
 	return app.exec();
 }

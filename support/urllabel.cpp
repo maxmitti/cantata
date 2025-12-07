@@ -33,7 +33,7 @@ UrlLabel::UrlLabel(QWidget* p)
 	setCursor(QCursor(Qt::PointingHandCursor));
 	setTextInteractionFlags(Qt::TextBrowserInteraction);
 	setOpenExternalLinks(false);
-	connect(this, SIGNAL(linkActivated(QString)), this, SIGNAL(leftClickedUrl()));
+	connect(this, &UrlLabel::linkActivated, this, &UrlLabel::leftClickedUrl);
 }
 
 void UrlLabel::setText(const QString& t)

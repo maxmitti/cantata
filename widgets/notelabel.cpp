@@ -86,7 +86,7 @@ UrlNoteLabel::UrlNoteLabel(QWidget* parent)
 	: QWidget(parent)
 {
 	label = static_cast<UrlLabel*>(init(this, true));
-	connect(label, SIGNAL(leftClickedUrl()), this, SIGNAL(leftClickedUrl()));
+	connect(label, &UrlLabel::leftClickedUrl, this, &UrlNoteLabel::leftClickedUrl);
 }
 
 void UrlNoteLabel::setProperty(const char* name, const QVariant& value)

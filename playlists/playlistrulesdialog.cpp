@@ -163,16 +163,19 @@ PlaylistRulesDialog::PlaylistRulesDialog(QWidget* parent, RulesPlaylists* m)
 	enableButton(Ok, false);
 	setCaption(rules->isDynamic() ? tr("Dynamic Playlist") : tr("Smart Playlist"));
 	setAttribute(Qt::WA_DeleteOnClose);
-	connect(addBtn, SIGNAL(clicked()), SLOT(add()));
-	connect(editBtn, SIGNAL(clicked()), SLOT(edit()));
-	connect(removeBtn, SIGNAL(clicked()), SLOT(remove()));
-	connect(rulesList, SIGNAL(itemsSelected(bool)), SLOT(controlButtons()));
-	connect(nameText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
-	connect(aboutLabel, SIGNAL(leftClickedUrl()), this, SLOT(showAbout()));
-	connect(ratingFrom, SIGNAL(valueChanged(int)), SLOT(ratingChanged(int)));
-	connect(ratingTo, SIGNAL(valueChanged(int)), SLOT(ratingChanged(int)));
+	connect(addBtn, &QPushButton::clicked, this, &PlaylistRulesDialog::add);
+	connect(editBtn, &QPushButton::clicked, this, qOverload<>(&PlaylistRulesDialog::edit));
+	connect(removeBtn, &QPushButton::clicked, this, &PlaylistRulesDialog::remove);
+	connect(rulesList, &ListView::itemsSelected, this, &PlaylistRulesDialog::controlButtons);
+	connect(nameText, &LineEdit::textChanged, this, &PlaylistRulesDialog::enableOkButton);
+	connect(aboutLabel, &UrlLabel::leftClickedUrl, this, &PlaylistRulesDialog::showAbout);
+	connect(ratingFrom, &RatingWidget::valueChanged, this, &PlaylistRulesDialog::ratingChanged);
+	connect(ratingTo, &RatingWidget::valueChanged, this, &PlaylistRulesDialog::ratingChanged);
 	if (rules->isDynamic()) {
-		connect(rules, SIGNAL(saved(bool)), SLOT(saved(bool)));
+		DynamicPlaylists* dynamicRules = qobject_cast<DynamicPlaylists*>(rules);
+		if (dynamicRules) {
+			connect(dynamicRules, &DynamicPlaylists::saved, this, &PlaylistRulesDialog::saved);
+		}
 	}
 
 	if (style()->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons)) {
@@ -217,7 +220,7 @@ PlaylistRulesDialog::PlaylistRulesDialog(QWidget* parent, RulesPlaylists* m)
 		orderAscending->addItem(tr("Ascending"));
 		orderAscending->addItem(tr("Descending"));
 		orderAscending->setEnabled(false);
-		connect(order, SIGNAL(currentIndexChanged(int)), this, SLOT(setOrder()));
+		connect(order, &QComboBox::currentIndexChanged, this, &PlaylistRulesDialog::setOrder);
 	}
 
 	controlButtons();
@@ -304,7 +307,7 @@ void PlaylistRulesDialog::add()
 {
 	if (!dlg) {
 		dlg = new PlaylistRuleDialog(this, rules->isDynamic());
-		connect(dlg, SIGNAL(addRule(const RulesPlaylists::Rule&)), SLOT(addRule(const RulesPlaylists::Rule&)));
+		connect(dlg, &PlaylistRuleDialog::addRule, this, &PlaylistRulesDialog::addRule);
 	}
 	dlg->createNew();
 }
@@ -331,7 +334,7 @@ void PlaylistRulesDialog::edit()
 	}
 	if (!dlg) {
 		dlg = new PlaylistRuleDialog(this, rules->isDynamic());
-		connect(dlg, SIGNAL(addRule(const RulesPlaylists::Rule&)), SLOT(addRule(const RulesPlaylists::Rule&)));
+		connect(dlg, &PlaylistRuleDialog::addRule, this, &PlaylistRulesDialog::addRule);
 	}
 	QModelIndex index = proxy->mapToSource(items.at(0));
 	QStandardItem* item = model->itemFromIndex(index);

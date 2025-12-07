@@ -68,7 +68,7 @@ CustomActions::CustomActions()
 			cmd.act = new Action(cmd.name, this);
 			m->addAction(cmd.act);
 			commands.append(cmd);
-			connect(cmd.act, SIGNAL(triggered()), this, SLOT(doAction()));
+			connect(cmd.act, &Action::triggered, this, &CustomActions::doAction);
 		}
 	}
 	setVisible(!commands.isEmpty());
@@ -90,7 +90,7 @@ void CustomActions::set(QList<Command> cmds)
 	if (diff) {
 		for (const Command& cmd : commands) {
 			m->removeAction(cmd.act);
-			disconnect(cmd.act, SIGNAL(triggered()), this, SLOT(doAction()));
+			disconnect(cmd.act, &Action::triggered, this, &CustomActions::doAction);
 			cmd.act->deleteLater();
 		}
 		commands.clear();
@@ -100,7 +100,7 @@ void CustomActions::set(QList<Command> cmds)
 			c.act = new Action(c.name, this);
 			m->addAction(c.act);
 			commands.append(c);
-			connect(c.act, SIGNAL(triggered()), this, SLOT(doAction()));
+			connect(c.act, &Action::triggered, this, &CustomActions::doAction);
 		}
 
 		Configuration cfg;

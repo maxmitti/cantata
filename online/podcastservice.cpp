@@ -425,7 +425,7 @@ PodcastService::PodcastService()
 	icn = Icon::fa(fa::fa_solid, fa::fa_rss_square);
 	useCovers(name(), true);
 	clearPartialDownloads();
-	connect(MPDConnection::self(), SIGNAL(currentSongUpdated(const Song&)), this, SLOT(currentMpdSong(const Song&)));
+	connect(MPDConnection::self(), &MPDConnection::currentSongUpdated, this, &PodcastService::currentMpdSong);
 	refreshAction = new Action(Icons::self()->reloadIcon, tr("Refresh"), this);
 }
 
@@ -772,7 +772,7 @@ void PodcastService::loadAll()
 void PodcastService::cancelAll()
 {
 	for (NetworkJob* j : rssJobs) {
-		disconnect(j, SIGNAL(finished()), this, SLOT(rssJobFinished()));
+		disconnect(j, &NetworkJob::finished, this, &PodcastService::rssJobFinished);
 		j->cancelAndDelete();
 	}
 	rssJobs.clear();
@@ -1015,7 +1015,7 @@ bool PodcastService::processingUrl(const QUrl& url) const
 void PodcastService::addUrl(const QUrl& url, bool isNew)
 {
 	NetworkJob* job = NetworkAccessManager::self()->get(url);
-	connect(job, SIGNAL(finished()), this, SLOT(rssJobFinished()));
+	connect(job, &NetworkJob::finished, this, &PodcastService::rssJobFinished);
 	job->setProperty(constNewFeedProperty, isNew);
 	rssJobs.append(job);
 }
@@ -1144,9 +1144,9 @@ void PodcastService::cancelDownload()
 {
 	if (downloadJob) {
 		downloadJob->cancelAndDelete();
-		disconnect(downloadJob, SIGNAL(finished()), this, SLOT(downloadJobFinished()));
-		disconnect(downloadJob, SIGNAL(readyRead()), this, SLOT(downloadReadyRead()));
-		disconnect(downloadJob, SIGNAL(downloadPercent(int)), this, SLOT(downloadPercent(int)));
+		disconnect(downloadJob, &NetworkJob::finished, this, &PodcastService::downloadJobFinished);
+		disconnect(downloadJob, &NetworkJob::readyRead, this, &PodcastService::downloadReadyRead);
+		disconnect(downloadJob, &NetworkJob::downloadPercent, this, &PodcastService::downloadPercent);
 
 		QString dest = downloadJob->property(constDestProperty).toString();
 		QString partial = dest.isEmpty() ? QString() : QString(dest + constPartialExt);
@@ -1170,9 +1170,9 @@ void PodcastService::doNextDownload()
 
 	DownloadEntry entry = toDownload.takeFirst();
 	downloadJob = NetworkAccessManager::self()->get(entry.url);
-	connect(downloadJob, SIGNAL(finished()), this, SLOT(downloadJobFinished()));
-	connect(downloadJob, SIGNAL(readyRead()), this, SLOT(downloadReadyRead()));
-	connect(downloadJob, SIGNAL(downloadPercent(int)), this, SLOT(downloadPercent(int)));
+	connect(downloadJob, &NetworkJob::finished, this, &PodcastService::downloadJobFinished);
+	connect(downloadJob, &NetworkJob::readyRead, this, &PodcastService::downloadReadyRead);
+	connect(downloadJob, &NetworkJob::downloadPercent, this, &PodcastService::downloadPercent);
 	downloadJob->setProperty(constRssUrlProperty, entry.rssUrl);
 	downloadJob->setProperty(constDestProperty, entry.dest);
 	updateEpisode(entry.rssUrl, entry.url, 0);
@@ -1307,7 +1307,7 @@ void PodcastService::startRssUpdateTimer()
 	if (!rssUpdateTimer) {
 		rssUpdateTimer = new QTimer(this);
 		rssUpdateTimer->setSingleShot(true);
-		connect(rssUpdateTimer, SIGNAL(timeout()), this, SLOT(updateRss()));
+		connect(rssUpdateTimer, &QTimer::timeout, this, &PodcastService::updateRss);
 	}
 	if (!lastRssUpdate.isValid()) {
 		lastRssUpdate = Settings::self()->lastRssUpdate();

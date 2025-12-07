@@ -142,7 +142,7 @@ void ViewSelector::addItem(const QString& label, const QVariant& data)
 	button->setText(label);
 	button->setCheckable(true);
 	button->setProperty(constDataProp, data);
-	connect(button, SIGNAL(toggled(bool)), this, SLOT(buttonActivated()));
+	connect(button, &QToolButton::toggled, this, &ViewSelector::buttonActivated);
 	buttons.append(button);
 	group->addButton(button);
 	l->addWidget(button);
@@ -216,7 +216,7 @@ ThinSplitter::ThinSplitter(QWidget* parent)
 	setChildrenCollapsible(true);
 	setOrientation(Qt::Horizontal);
 	resetAct = new QAction(tr("Reset Spacing"), this);
-	connect(resetAct, SIGNAL(triggered()), this, SLOT(reset()));
+	connect(resetAct, &QAction::triggered, this, &ThinSplitter::reset);
 	setHandleWidth(0);
 }
 
@@ -266,9 +266,9 @@ ContextWidget::ContextWidget(QWidget* parent)
 	album->addEventFilter(this);
 	song->addEventFilter(this);
 
-	connect(artist, SIGNAL(findArtist(QString)), this, SIGNAL(findArtist(QString)));
-	connect(artist, SIGNAL(findAlbum(QString, QString)), this, SIGNAL(findAlbum(QString, QString)));
-	connect(album, SIGNAL(playSong(QString)), this, SIGNAL(playSong(QString)));
+	connect(artist, &ArtistView::findArtist, this, &ContextWidget::findArtist);
+	connect(artist, &ArtistView::findAlbum, this, &ContextWidget::findAlbum);
+	connect(album, qOverload<const QString&>(&AlbumView::playSong), this, &ContextWidget::playSong);
 	readConfig();
 	setWide(true);
 }
@@ -341,7 +341,7 @@ void ContextWidget::setWide(bool w)
 			viewSelector->addItem(tr("Al&bum"), "album");
 			viewSelector->addItem(tr("&Track"), "song");
 			viewSelector->setPalette(palette());
-			connect(viewSelector, SIGNAL(activated(int)), stack, SLOT(setCurrentIndex(int)));
+			connect(viewSelector, &ViewSelector::activated, stack, &QStackedWidget::setCurrentIndex);
 		}
 		if (splitter) {
 			splitter->setVisible(false);
@@ -767,7 +767,7 @@ void ContextWidget::getMusicbrainzId(const QString& artist)
 	job = NetworkAccessManager::self()->get(url);
 	DBUG << url.toString();
 	job->setProperty(constArtistProp, artist);
-	connect(job, SIGNAL(finished()), this, SLOT(musicbrainzResponse()));
+	connect(job, &NetworkJob::finished, this, &ContextWidget::musicbrainzResponse);
 }
 
 void ContextWidget::musicbrainzResponse()
@@ -836,7 +836,7 @@ void ContextWidget::musicbrainzResponse()
 
 		job = NetworkAccessManager::self()->get(url);
 		DBUG << url.toString();
-		connect(job, SIGNAL(finished()), this, SLOT(fanArtResponse()));
+		connect(job, &NetworkJob::finished, this, &ContextWidget::fanArtResponse);
 	}
 }
 
@@ -883,7 +883,7 @@ void ContextWidget::fanArtResponse()
 	else {
 		job = NetworkAccessManager::self()->get(QUrl(url));
 		DBUG << url;
-		connect(job, SIGNAL(finished()), this, SLOT(downloadResponse()));
+		connect(job, &NetworkJob::finished, this, &ContextWidget::downloadResponse);
 	}
 }
 

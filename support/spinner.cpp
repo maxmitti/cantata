@@ -55,7 +55,7 @@ void Spinner::start()
 	active = true;
 	if (!timer) {
 		timer = new QTimer(this);
-		connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
+		connect(timer, &QTimer::timeout, this, &Spinner::timeout);
 	}
 	timer->start(75);
 }

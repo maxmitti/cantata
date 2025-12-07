@@ -29,6 +29,7 @@
 #include "mpd-interface/song.h"
 #include "widgets/itemview.h"
 #include <QWidget>
+#include <QActionGroup>
 
 class Action;
 
@@ -45,9 +46,30 @@ public:
 
 	typedef QPair<QString, int> MenuItem;
 	static const char* constValProp;
-	static QList<QAction*> createActions(const QList<MenuItem>& values, int currentVal, QWidget* parent, const char* slot);
+	template <typename Widget>
+	static QList<QAction*> createActions(const QList<MenuItem>& values, int currentVal, Widget* parent, void (Widget::*slot)())
+	{
+		QList<QAction*> actions;
+		QActionGroup* group = new QActionGroup(parent);
+		for (const MenuItem& v : values) {
+			QAction* act = new QAction(v.first, parent);
+			connect(act, &QAction::toggled, parent, slot);
+			act->setActionGroup(group);
+			act->setProperty(constValProp, v.second);
+			act->setCheckable(true);
+			act->setChecked(v.second == currentVal);
+			actions.append(act);
+		}
+		return actions;
+	}
+
 	static Action* createMenuGroup(const QString& name, const QList<QAction*> actions, QWidget* parent);
-	static Action* createMenuGroup(const QString& name, const QList<MenuItem>& values, int currentVal, QWidget* parent, const char* slot);
+
+	template <typename Widget>
+	static Action* createMenuGroup(const QString& name, const QList<MenuItem>& values, int currentVal, Widget* parent, void (Widget::*slot)())
+	{
+		return createMenuGroup(name, createActions(values, currentVal, parent, slot), parent);
+	}
 
 	SinglePageWidget(QWidget* p);
 	~SinglePageWidget() override {}

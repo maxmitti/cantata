@@ -95,21 +95,21 @@ void VolumeSlider::initActions()
 	}
 	muteAction = ActionCollection::get()->createAction("mute", tr("Mute"));
 	addAction(muteAction);
-	connect(muteAction, SIGNAL(triggered()), this, SLOT(muteToggled()));
-	connect(StdActions::self()->increaseVolumeAction, SIGNAL(triggered()), this, SLOT(increaseVolume()));
-	connect(StdActions::self()->decreaseVolumeAction, SIGNAL(triggered()), this, SLOT(decreaseVolume()));
+	connect(muteAction, &Action::triggered, this, &VolumeSlider::muteToggled);
+	connect(StdActions::self()->increaseVolumeAction, &Action::triggered, this, &VolumeSlider::increaseVolume);
+	connect(StdActions::self()->decreaseVolumeAction, &Action::triggered, this, &VolumeSlider::decreaseVolume);
 	if (isMpdVol) {
-		connect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(updateStatus()));
-		connect(this, SIGNAL(valueChanged(int)), MPDConnection::self(), SLOT(setVolume(int)));
-		connect(this, SIGNAL(toggleMute()), MPDConnection::self(), SLOT(toggleMute()));
+		connect(MPDStatus::self(), &MPDStatus::updated, this, &VolumeSlider::updateStatus);
+		connect(this, &VolumeSlider::valueChanged, MPDConnection::self(), &MPDConnection::setVolume);
+		connect(this, &VolumeSlider::toggleMute, MPDConnection::self(), &MPDConnection::toggleMute);
 	}
 #ifdef ENABLE_HTTP_STREAM_PLAYBACK
 	else {
-		connect(this, SIGNAL(valueChanged(int)), HttpStream::self(), SLOT(setVolume(int)));
-		connect(this, SIGNAL(toggleMute()), HttpStream::self(), SLOT(toggleMute()));
-		connect(HttpStream::self(), SIGNAL(update()), this, SLOT(updateStatus()));
-		connect(HttpStream::self(), SIGNAL(isEnabled(bool)), this, SLOT(setEnabled(bool)));
-		connect(HttpStream::self(), SIGNAL(isEnabled(bool)), this, SIGNAL(stateChanged()));
+		connect(this, &VolumeSlider::valueChanged, HttpStream::self(), &HttpStream::setVolume);
+		connect(this, &VolumeSlider::toggleMute, HttpStream::self(), &HttpStream::toggleMute);
+		connect(HttpStream::self(), &HttpStream::update, this, &VolumeSlider::updateStatus);
+		connect(HttpStream::self(), &HttpStream::isEnabled, this, &VolumeSlider::setEnabled);
+		connect(HttpStream::self(), &HttpStream::isEnabled, this, &VolumeSlider::stateChanged);
 	}
 #endif
 	addAction(StdActions::self()->increaseVolumeAction);

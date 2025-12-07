@@ -438,16 +438,16 @@ void FsDevice::addSong(const Song& s, bool overwrite, bool copyCover)
 		TranscodingJob* job = new TranscodingJob(encoder, opts.transcoderValue, s.file, currentDestFile, copyCover ? opts : DeviceOptions(Device::constNoCover),
 		                                         (needToFixVa ? CopyJob::OptsApplyVaFix : CopyJob::OptsNone) | (Device::RemoteFs == devType() ? CopyJob::OptsFixLocal : CopyJob::OptsNone),
 		                                         currentSong);
-		connect(job, SIGNAL(result(int)), SLOT(addSongResult(int)));
-		connect(job, SIGNAL(percent(int)), SLOT(percent(int)));
+		connect(job, &TranscodingJob::result, this, &FsDevice::addSongResult);
+		connect(job, &TranscodingJob::percent, this, &FsDevice::percent);
 		job->start();
 	}
 	else {
 		CopyJob* job = new CopyJob(s.file, currentDestFile, copyCover ? opts : DeviceOptions(Device::constNoCover),
 		                           (needToFixVa ? CopyJob::OptsApplyVaFix : CopyJob::OptsNone) | (Device::RemoteFs == devType() ? CopyJob::OptsFixLocal : CopyJob::OptsNone),
 		                           currentSong);
-		connect(job, SIGNAL(result(int)), SLOT(addSongResult(int)));
-		connect(job, SIGNAL(percent(int)), SLOT(percent(int)));
+		connect(job, &CopyJob::result, this, &FsDevice::addSongResult);
+		connect(job, &CopyJob::percent, this, &FsDevice::percent);
 		job->start();
 	}
 }
@@ -498,8 +498,8 @@ void FsDevice::copySongTo(const Song& s, const QString& musicPath, bool overwrit
 	// Pass an empty filename as covername, so that Covers::copyCover knows this is TO MPD...
 	CopyJob* job = new CopyJob(source, currentDestFile, copyCover ? DeviceOptions(QString()) : DeviceOptions(Device::constNoCover),
 	                           needToFixVa ? CopyJob::OptsUnApplyVaFix : CopyJob::OptsNone, currentSong);
-	connect(job, SIGNAL(result(int)), SLOT(copySongToResult(int)));
-	connect(job, SIGNAL(percent(int)), SLOT(percent(int)));
+	connect(job, &CopyJob::result, this, &FsDevice::copySongToResult);
+	connect(job, &CopyJob::percent, this, &FsDevice::percent);
 	job->start();
 }
 
@@ -518,15 +518,15 @@ void FsDevice::removeSong(const Song& s)
 
 	currentSong = s;
 	DeleteJob* job = new DeleteJob(audioFolder + s.file);
-	connect(job, SIGNAL(result(int)), SLOT(removeSongResult(int)));
+	connect(job, &DeleteJob::result, this, &FsDevice::removeSongResult);
 	job->start();
 }
 
 void FsDevice::cleanDirs(const QSet<QString>& dirs)
 {
 	CleanJob* job = new CleanJob(dirs, audioFolder, opts.coverName);
-	connect(job, SIGNAL(result(int)), SLOT(cleanDirsResult(int)));
-	connect(job, SIGNAL(percent(int)), SLOT(percent(int)));
+	connect(job, &CleanJob::result, this, &FsDevice::cleanDirsResult);
+	connect(job, &CleanJob::percent, this, &FsDevice::percent);
 	job->start();
 }
 
@@ -661,13 +661,13 @@ void FsDevice::initScaner()
 			registeredTypes = true;
 		}
 		scanner = new MusicScanner(data());
-		connect(scanner, SIGNAL(libraryUpdated(MusicLibraryItemRoot*)), this, SLOT(libraryUpdated(MusicLibraryItemRoot*)));
-		connect(scanner, SIGNAL(songCount(int)), this, SLOT(songCount(int)));
-		connect(scanner, SIGNAL(cacheSaved()), this, SLOT(savedCache()));
-		connect(scanner, SIGNAL(savingCache(int)), this, SLOT(savingCache(int)));
-		connect(scanner, SIGNAL(readingCache(int)), this, SLOT(readingCache(int)));
-		connect(this, SIGNAL(scan(const QString&, const QString&, bool, const QSet<FileOnlySong>&)), scanner, SLOT(scan(const QString&, const QString&, bool, const QSet<FileOnlySong>&)));
-		connect(this, SIGNAL(saveCache(const QString&, MusicLibraryItemRoot*)), scanner, SLOT(saveCache(const QString&, MusicLibraryItemRoot*)));
+		connect(scanner, &MusicScanner::libraryUpdated, this, &FsDevice::libraryUpdated);
+		connect(scanner, &MusicScanner::songCount, this, &FsDevice::songCount);
+		connect(scanner, &MusicScanner::cacheSaved, this, &FsDevice::savedCache);
+		connect(scanner, &MusicScanner::savingCache, this, &FsDevice::savingCache);
+		connect(scanner, &MusicScanner::readingCache, this, &FsDevice::readingCache);
+		connect(this, &FsDevice::scan, scanner, &MusicScanner::scan);
+		connect(this, qOverload<const QString&, MusicLibraryItemRoot*>(&FsDevice::saveCache), scanner, &MusicScanner::saveCache);
 	}
 }
 
@@ -695,11 +695,11 @@ void FsDevice::stopScanner()
 	if (!scanner) {
 		return;
 	}
-	disconnect(scanner, SIGNAL(libraryUpdated(MusicLibraryItemRoot*)), this, SLOT(libraryUpdated(MusicLibraryItemRoot*)));
-	disconnect(scanner, SIGNAL(songCount(int)), this, SLOT(songCount(int)));
-	disconnect(scanner, SIGNAL(cacheSaved()), this, SLOT(savedCache()));
-	disconnect(scanner, SIGNAL(savingCache(int)), this, SLOT(savingCache(int)));
-	disconnect(scanner, SIGNAL(readingCache(int)), this, SLOT(readingCache(int)));
+	disconnect(scanner, &MusicScanner::libraryUpdated, this, &FsDevice::libraryUpdated);
+	disconnect(scanner, &MusicScanner::songCount, this, &FsDevice::songCount);
+	disconnect(scanner, &MusicScanner::cacheSaved, this, &FsDevice::savedCache);
+	disconnect(scanner, &MusicScanner::savingCache, this, &FsDevice::savingCache);
+	disconnect(scanner, &MusicScanner::readingCache, this, &FsDevice::readingCache);
 	scanner->deleteLater();
 	scanner = nullptr;
 }

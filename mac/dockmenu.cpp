@@ -34,7 +34,7 @@ DockMenu::DockMenu(QWidget* p)
 	addAction(StdActions::self()->stopPlaybackAction);
 	addAction(StdActions::self()->stopAfterCurrentTrackAction);
 	addAction(StdActions::self()->nextTrackAction);
-	connect(playPauseAction, SIGNAL(triggered()), StdActions::self()->playPauseTrackAction, SIGNAL(triggered()));
+	connect(playPauseAction, &QAction::triggered, StdActions::self()->playPauseTrackAction, &QAction::triggered);
 }
 
 void DockMenu::update(MPDStatus* const status)

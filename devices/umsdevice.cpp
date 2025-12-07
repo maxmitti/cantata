@@ -229,9 +229,9 @@ void UmsDevice::configure(QWidget* parent)
 	}
 
 	DevicePropertiesDialog* dlg = new DevicePropertiesDialog(parent);
-	connect(dlg, SIGNAL(updatedSettings(const QString&, const DeviceOptions&)), SLOT(saveProperties(const QString&, const DeviceOptions&)));
+	connect(dlg, &DevicePropertiesDialog::updatedSettings, this, qOverload<const QString&, const DeviceOptions&>(&UmsDevice::saveProperties));
 	if (!configured) {
-		connect(dlg, SIGNAL(cancelled()), SLOT(saveProperties()));
+		connect(dlg, &DevicePropertiesDialog::cancelled, this, qOverload<>(&UmsDevice::saveProperties));
 	}
 	DeviceOptions o = opts;
 	if (o.name.isEmpty()) {

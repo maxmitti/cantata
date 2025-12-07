@@ -49,8 +49,29 @@ public:
 	static QString settingsText(QAction* act);
 
 	explicit Action(QObject* parent);
-	Action(const QString& text, QObject* parent, const QObject* receiver = nullptr, const char* slot = nullptr, const QKeySequence& shortcut = 0);
-	Action(const QIcon& icon, const QString& text, QObject* parent, const QObject* receiver = nullptr, const char* slot = nullptr, const QKeySequence& shortcut = 0);
+
+	template <typename Receiver = QObject>
+	Action(const QString& text, QObject* parent, const Receiver* receiver = nullptr, void (Receiver::*slot)() = nullptr, const QKeySequence& shortcut = 0)
+		: QAction(parent)
+	{
+		init();
+		setText(text);
+		setShortcut(shortcut);
+		if (receiver && slot)
+			connect(this, &Action::triggered, receiver, slot);
+	}
+
+	template <typename Receiver = QObject>
+	Action(const QIcon& icon, const QString& text, QObject* parent, const Receiver* receiver = nullptr, void (Receiver::*slot)() = nullptr, const QKeySequence& shortcut = 0)
+		: QAction(parent)
+	{
+		init();
+		setIcon(icon);
+		setText(text);
+		setShortcut(shortcut);
+		if (receiver && slot)
+			connect(this, &Action::triggered, receiver, slot);
+	}
 
 	QKeySequence shortcut(ShortcutTypes types = ActiveShortcut) const;
 	void setShortcut(const QShortcut& shortcut, ShortcutTypes type = ShortcutTypes(ActiveShortcut | DefaultShortcut));
@@ -61,6 +82,9 @@ public:
 
 	void setSettingsText(const QString& text);
 	void setSettingsText(Action* parent);
+
+public slots:
+	void emitTriggered();
 
 signals:
 	void triggered(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);

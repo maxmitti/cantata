@@ -46,8 +46,8 @@ PowerManagement::PowerManagement()
 	                                           QLatin1String("/org/freedesktop/UPower"), QDBusConnection::systemBus(), this);
 	login1 = new OrgFreedesktopLogin1ManagerInterface("org.freedesktop.login1",
 	                                                  QLatin1String("/org/freedesktop/login1"), QDBusConnection::systemBus(), this);
-	connect(upower, SIGNAL(Resuming()), this, SIGNAL(resuming()));
-	connect(login1, SIGNAL(PrepareForSleep(bool)), this, SLOT(prepareForSleep(bool)));
+	connect(upower, &OrgFreedesktopUPowerInterface::Resuming, this, &PowerManagement::resuming);
+	connect(login1, &OrgFreedesktopLogin1ManagerInterface::PrepareForSleep, this, &PowerManagement::prepareForSleep);
 }
 
 void PowerManagement::setInhibitSuspend(bool i)
@@ -58,13 +58,13 @@ void PowerManagement::setInhibitSuspend(bool i)
 	inhibitSuspendWhilstPlaying = i;
 
 	if (inhibitSuspendWhilstPlaying) {
-		connect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(mpdStatusUpdated()));
+		connect(MPDStatus::self(), &MPDStatus::updated, this, &PowerManagement::mpdStatusUpdated);
 		if (MPDState_Playing == MPDStatus::self()->state()) {
 			beginSuppressingSleep();
 		}
 	}
 	else {
-		disconnect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(mpdStatusUpdated()));
+		disconnect(MPDStatus::self(), &MPDStatus::updated, this, &PowerManagement::mpdStatusUpdated);
 		stopSuppressingSleep();
 	}
 }
