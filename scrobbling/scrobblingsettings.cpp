@@ -37,15 +37,15 @@ ScrobblingSettings::ScrobblingSettings(QWidget* parent)
 {
 	setupUi(this);
 
-	connect(loginButton, SIGNAL(clicked()), this, SLOT(save()));
-	connect(Scrobbler::self(), SIGNAL(authenticated(bool)), SLOT(showStatus(bool)));
-	connect(Scrobbler::self(), SIGNAL(error(QString)), SLOT(showError(QString)));
-	connect(user, SIGNAL(textChanged(QString)), SLOT(controlLoginButton()));
-	connect(pass, SIGNAL(textChanged(QString)), SLOT(controlLoginButton()));
-	//    connect(enableScrobbling, SIGNAL(toggled(bool)), Scrobbler::self(), SLOT(setEnabled(bool)));
-	//    connect(showLove, SIGNAL(toggled(bool)), Scrobbler::self(), SLOT(setLoveEnabled(bool)));
-	connect(Scrobbler::self(), SIGNAL(enabled(bool)), enableScrobbling, SLOT(setChecked(bool)));
-	connect(scrobbler, SIGNAL(currentIndexChanged(int)), this, SLOT(scrobblerChanged()));
+	connect(loginButton, &QPushButton::clicked, this, &ScrobblingSettings::save);
+	connect(Scrobbler::self(), &Scrobbler::authenticated, this, &ScrobblingSettings::showStatus);
+	connect(Scrobbler::self(), &Scrobbler::error, this, &ScrobblingSettings::showError);
+	connect(user, &LineEdit::textChanged, this, &ScrobblingSettings::controlLoginButton);
+	connect(pass, &LineEdit::textChanged, this, &ScrobblingSettings::controlLoginButton);
+	//    connect(enableScrobbling, &MpdSocket::toggled, Scrobbler::self(), &Scrobbler::setEnabled);
+	//    connect(showLove, &MpdSocket::toggled, Scrobbler::self(), &Scrobbler::setLoveEnabled);
+	connect(Scrobbler::self(), &Scrobbler::enabled, enableScrobbling, &QCheckBox::setChecked);
+	connect(scrobbler, &QComboBox::currentIndexChanged, this, &ScrobblingSettings::scrobblerChanged);
 	loginButton->setEnabled(false);
 
 	QMap<QString, QString> scrobblers = Scrobbler::self()->availableScrobblers();

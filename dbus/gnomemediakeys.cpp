@@ -73,7 +73,7 @@ bool GnomeMediaKeys::daemonIsRunning()
 		QDBusConnection::sessionBus().interface()->startService(constOrigService);// ??
 		if (!daemon) {
 			daemon = new OrgGnomeSettingsDaemonInterface(constOrigService, constDaemonPath, QDBusConnection::sessionBus(), this);
-			connect(daemon, SIGNAL(PluginActivated(QString)), this, SLOT(pluginActivated(QString)));
+			connect(daemon, &OrgGnomeSettingsDaemonInterface::PluginActivated, this, &GnomeMediaKeys::pluginActivated);
 			daemon->Start();
 			return false;
 		}
@@ -85,7 +85,7 @@ void GnomeMediaKeys::releaseKeys()
 {
 	if (mk) {
 		mk->ReleaseMediaPlayerKeys(QCoreApplication::applicationName());
-		disconnect(mk, SIGNAL(MediaPlayerKeyPressed(QString, QString)), this, SLOT(keyPressed(QString, QString)));
+		disconnect(mk, &OrgGnomeSettingsDaemonMediaKeysInterface::MediaPlayerKeyPressed, this, &GnomeMediaKeys::keyPressed);
 		mk->deleteLater();
 		mk = nullptr;
 	}
@@ -102,13 +102,13 @@ void GnomeMediaKeys::grabKeys()
 
 			QDBusPendingReply<> reply = mk->GrabMediaPlayerKeys(QCoreApplication::applicationName(), QDateTime::currentDateTime().toSecsSinceEpoch());
 			QDBusPendingCallWatcher* callWatcher = new QDBusPendingCallWatcher(reply, this);
-			connect(callWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)), this, SLOT(registerFinished(QDBusPendingCallWatcher*)));
+			connect(callWatcher, &QDBusPendingCallWatcher::finished, this, &GnomeMediaKeys::registerFinished);
 
 			if (!watcher) {
 				watcher = new QDBusServiceWatcher(this);
 				watcher->setConnection(QDBusConnection::sessionBus());
 				watcher->setWatchMode(QDBusServiceWatcher::WatchForOwnerChange);
-				connect(watcher, SIGNAL(serviceOwnerChanged(QString, QString, QString)), this, SLOT(serviceOwnerChanged(QString, QString, QString)));
+				connect(watcher, &QDBusServiceWatcher::serviceOwnerChanged, this, &GnomeMediaKeys::serviceOwnerChanged);
 			}
 			serviceName = service;
 			break;
@@ -119,7 +119,7 @@ void GnomeMediaKeys::grabKeys()
 void GnomeMediaKeys::disconnectDaemon()
 {
 	if (daemon) {
-		disconnect(daemon, SIGNAL(PluginActivated(QString)), this, SLOT(pluginActivated(QString)));
+		disconnect(daemon, &OrgGnomeSettingsDaemonInterface::PluginActivated, this, &GnomeMediaKeys::pluginActivated);
 		daemon->deleteLater();
 		daemon = nullptr;
 	}
@@ -142,7 +142,7 @@ void GnomeMediaKeys::registerFinished(QDBusPendingCallWatcher* watcher)
 	watcher->deleteLater();
 
 	if (QDBusMessage::ErrorMessage != reply.type()) {
-		connect(mk, SIGNAL(MediaPlayerKeyPressed(QString, QString)), this, SLOT(keyPressed(QString, QString)));
+		connect(mk, &OrgGnomeSettingsDaemonMediaKeysInterface::MediaPlayerKeyPressed, this, &GnomeMediaKeys::keyPressed);
 		disconnectDaemon();
 	}
 }

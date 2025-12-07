@@ -128,10 +128,10 @@ SyncDialog::SyncDialog(QWidget* parent)
 	enableButtonOk(false);
 	setAttribute(Qt::WA_DeleteOnClose);
 	setCaption(tr("Synchronize"));
-	connect(libWidget, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
-	connect(devWidget, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
-	connect(libWidget, SIGNAL(configure()), SLOT(configure()));
-	connect(devWidget, SIGNAL(configure()), SLOT(configure()));
+	connect(libWidget, &SyncCollectionWidget::selectionChanged, this, &SyncDialog::selectionChanged);
+	connect(devWidget, &SyncCollectionWidget::selectionChanged, this, &SyncDialog::selectionChanged);
+	connect(libWidget, &SyncCollectionWidget::configure, this, &SyncDialog::configure);
+	connect(devWidget, &SyncCollectionWidget::configure, this, &SyncDialog::configure);
 	libOptions.save(MPDConnectionDetails::configGroupName(MPDConnection::self()->getDetails().name), true);
 }
 
@@ -143,7 +143,7 @@ SyncDialog::~SyncDialog()
 void SyncDialog::sync(const QString& udi)
 {
 	devUdi = udi;
-	connect(MpdLibraryModel::self(), SIGNAL(songListing(QList<Song>, double)), this, SLOT(librarySongs(QList<Song>, double)));
+	connect(MpdLibraryModel::self(), &MpdLibraryModel::songListing, this, &SyncDialog::librarySongs);
 	MpdLibraryModel::self()->listSongs();
 	show();
 }
@@ -158,7 +158,7 @@ void SyncDialog::copy(const QList<Song>& songs)
 
 	bool fromDev = sender() == devWidget;
 	ActionDialog* dlg = new ActionDialog(this);
-	connect(dlg, SIGNAL(completed()), SLOT(updateSongs()));
+	connect(dlg, &ActionDialog::completed, this, &SyncDialog::updateSongs);
 	dlg->copy(fromDev ? dev->id() : QString(), fromDev ? QString() : dev->id(), songs);
 }
 
@@ -195,7 +195,7 @@ void SyncDialog::librarySongs(const QList<Song>& songs, double pc)
 {
 	if (songs.isEmpty()) {
 		statusLabel->hide();
-		disconnect(MpdLibraryModel::self(), SIGNAL(songListing(QList<Song>, double)), this, SLOT(librarySongs(QList<Song>, double)));
+		disconnect(MpdLibraryModel::self(), &MpdLibraryModel::songListing, this, &SyncDialog::librarySongs);
 		updateSongs();
 	}
 	else {
@@ -213,7 +213,7 @@ void SyncDialog::configure()
 {
 	if (libWidget == sender()) {
 		DevicePropertiesDialog* dlg = new DevicePropertiesDialog(this);
-		connect(dlg, SIGNAL(updatedSettings(const QString&, const DeviceOptions&)), SLOT(saveProperties(const QString&, const DeviceOptions&)));
+		connect(dlg, &DevicePropertiesDialog::updatedSettings, this, &SyncDialog::saveProperties);
 		dlg->setCaption(tr("Local Music Library Properties"));
 		dlg->show(MPDConnection::self()->getDetails().dir, libOptions, DevicePropertiesWidget::Prop_Basic | DevicePropertiesWidget::Prop_FileName);
 	}

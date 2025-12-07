@@ -41,7 +41,7 @@ ValueSlider::ValueSlider(QWidget* parent)
 	leftLabel = new QLabel(this);
 	layout->addWidget(leftLabel, 2, 0, 1, 1);
 	midLabel = new QLabel(this);
-	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
+	connect(slider, &QSlider::valueChanged, this, &ValueSlider::onSliderChanged);
 	rightLabel = new QLabel(this);
 	rightLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 	layout->addWidget(rightLabel, 2, 2, 1, 1);

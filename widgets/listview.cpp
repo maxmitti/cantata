@@ -47,8 +47,8 @@ ListView::ListView(QWidget* parent)
 	setUniformItemSizes(true);
 	setAttribute(Qt::WA_MouseTracking);
 	setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-	connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(showCustomContextMenu(const QPoint&)));
-	connect(this, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(checkDoubleClick(const QModelIndex&)));
+	connect(this, &ListView::customContextMenuRequested, this, &ListView::showCustomContextMenu);
+	connect(this, &ListView::doubleClicked, this, &ListView::checkDoubleClick);
 }
 
 ListView::~ListView()
@@ -98,11 +98,11 @@ void ListView::setModel(QAbstractItemModel* m)
 	QListView::setModel(m);
 
 	if (old) {
-		disconnect(old, SIGNAL(layoutChanged()), this, SLOT(correctSelection()));
+		disconnect(old, &QAbstractItemModel::layoutChanged, this, &ListView::correctSelection);
 	}
 
 	if (m && old != m) {
-		connect(m, SIGNAL(layoutChanged()), this, SLOT(correctSelection()));
+		connect(m, &QAbstractItemModel::layoutChanged, this, &ListView::correctSelection);
 	}
 }
 

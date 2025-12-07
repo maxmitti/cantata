@@ -1213,25 +1213,25 @@ MtpDevice::MtpDevice(MusicLibraryModel* m, Solid::Device& dev, unsigned int busN
 	}
 
 	connection = new MtpConnection(data(), busNum, devNum, supportsAlbumArtistTag());
-	connect(this, SIGNAL(updateLibrary(const DeviceOptions&)), connection, SLOT(updateLibrary(const DeviceOptions&)));
-	connect(connection, SIGNAL(libraryUpdated()), this, SLOT(libraryUpdated()));
-	connect(connection, SIGNAL(progress(int)), this, SLOT(emitProgress(int)));
-	connect(this, SIGNAL(putSong(const Song&, bool, const DeviceOptions&, bool, bool)), connection, SLOT(putSong(const Song&, bool, const DeviceOptions&, bool, bool)));
-	connect(connection, SIGNAL(putSongStatus(int, const QString&, bool, bool)), this, SLOT(putSongStatus(int, const QString&, bool, bool)));
-	connect(this, SIGNAL(getSong(const Song&, const QString&, bool, bool)), connection, SLOT(getSong(const Song&, const QString&, bool, bool)));
-	connect(connection, SIGNAL(getSongStatus(bool, bool)), this, SLOT(getSongStatus(bool, bool)));
-	connect(this, SIGNAL(delSong(const Song&)), connection, SLOT(delSong(const Song&)));
-	connect(connection, SIGNAL(delSongStatus(bool)), this, SLOT(delSongStatus(bool)));
-	connect(this, SIGNAL(cleanMusicDirs(const QSet<QString>&)), connection, SLOT(cleanDirs(const QSet<QString>&)));
-	connect(this, SIGNAL(getCover(const Song&)), connection, SLOT(getCover(const Song&)));
-	connect(connection, SIGNAL(cleanDirsStatus(bool)), this, SLOT(cleanDirsStatus(bool)));
-	connect(connection, SIGNAL(statusMessage(const QString&)), this, SLOT(setStatusMessage(const QString&)));
-	connect(connection, SIGNAL(deviceDetails(const QString&)), this, SLOT(deviceDetails(const QString&)));
-	connect(connection, SIGNAL(updatePercentage(int)), this, SLOT(updatePercentage(int)));
-	connect(connection, SIGNAL(cover(const Song&, const QImage&)), this, SIGNAL(cover(const Song&, const QImage&)));
+	connect(this, &MtpDevice::updateLibrary, connection, &MtpConnection::updateLibrary);
+	connect(connection, &MtpConnection::libraryUpdated, this, &MtpDevice::libraryUpdated);
+	connect(connection, &MtpConnection::progress, this, &MtpDevice::emitProgress);
+	connect(this, &MtpDevice::putSong, connection, &MtpConnection::putSong);
+	connect(connection, &MtpConnection::putSongStatus, this, &MtpDevice::putSongStatus);
+	connect(this, &MtpDevice::getSong, connection, &MtpConnection::getSong);
+	connect(connection, &MtpConnection::getSongStatus, this, &MtpDevice::getSongStatus);
+	connect(this, &MtpDevice::delSong, connection, &MtpConnection::delSong);
+	connect(connection, &MtpConnection::delSongStatus, this, &MtpDevice::delSongStatus);
+	connect(this, &MtpDevice::cleanMusicDirs, connection, &MtpConnection::cleanDirs);
+	connect(this, &MtpDevice::getCover, connection, &MtpConnection::getCover);
+	connect(connection, &MtpConnection::cleanDirsStatus, this, &MtpDevice::cleanDirsStatus);
+	connect(connection, &MtpConnection::statusMessage, this, &MtpDevice::setStatusMessage);
+	connect(connection, &MtpConnection::deviceDetails, this, &MtpDevice::deviceDetails);
+	connect(connection, &MtpConnection::updatePercentage, this, &MtpDevice::updatePercentage);
+	connect(connection, &MtpConnection::cover, this, &MtpDevice::cover);
 	opts.fixVariousArtists = false;
 	opts.coverName = constMtpDefaultCover;
-	QTimer::singleShot(0, this, SLOT(rescan(bool)));
+	QTimer::singleShot(0, this, [this] { rescan(); });
 	defaultName = data();
 	if (!opts.name.isEmpty()) {
 		DBUG << "setName" << opts.name;
@@ -1271,16 +1271,16 @@ void MtpDevice::stop()
 	abortJob();
 	deleteTemp();
 	if (connection) {
-		disconnect(connection, SIGNAL(libraryUpdated()), this, SLOT(libraryUpdated()));
-		disconnect(connection, SIGNAL(progress(int)), this, SLOT(emitProgress(int)));
-		disconnect(connection, SIGNAL(putSongStatus(int, const QString&, bool, bool)), this, SLOT(putSongStatus(int, const QString&, bool, bool)));
-		disconnect(connection, SIGNAL(getSongStatus(bool, bool)), this, SLOT(getSongStatus(bool, bool)));
-		disconnect(connection, SIGNAL(delSongStatus(bool)), this, SLOT(delSongStatus(bool)));
-		disconnect(connection, SIGNAL(cleanDirsStatus(bool)), this, SLOT(cleanDirsStatus(bool)));
-		disconnect(connection, SIGNAL(statusMessage(const QString&)), this, SLOT(setStatusMessage(const QString&)));
-		disconnect(connection, SIGNAL(deviceDetails(const QString&)), this, SLOT(deviceDetails(const QString&)));
-		disconnect(connection, SIGNAL(updatePercentage(int)), this, SLOT(updatePercentage(int)));
-		disconnect(connection, SIGNAL(cover(const Song&, const QImage&)), this, SIGNAL(cover(const Song&, const QImage&)));
+		disconnect(connection, &MtpConnection::libraryUpdated, this, &MtpDevice::libraryUpdated);
+		disconnect(connection, &MtpConnection::progress, this, &MtpDevice::emitProgress);
+		disconnect(connection, &MtpConnection::putSongStatus, this, &MtpDevice::putSongStatus);
+		disconnect(connection, &MtpConnection::getSongStatus, this, &MtpDevice::getSongStatus);
+		disconnect(connection, &MtpConnection::delSongStatus, this, &MtpDevice::delSongStatus);
+		disconnect(connection, &MtpConnection::cleanDirsStatus, this, &MtpDevice::cleanDirsStatus);
+		disconnect(connection, &MtpConnection::statusMessage, this, &MtpDevice::setStatusMessage);
+		disconnect(connection, &MtpConnection::deviceDetails, this, &MtpDevice::deviceDetails);
+		disconnect(connection, &MtpConnection::updatePercentage, this, &MtpDevice::updatePercentage);
+		disconnect(connection, &MtpConnection::cover, this, &MtpDevice::cover);
 		metaObject()->invokeMethod(connection, "stop", Qt::QueuedConnection);
 		connection->deleteLater();
 		connection = 0;
@@ -1294,9 +1294,9 @@ void MtpDevice::configure(QWidget* parent)
 	}
 
 	DevicePropertiesDialog* dlg = new DevicePropertiesDialog(parent);
-	connect(dlg, SIGNAL(updatedSettings(const QString&, const DeviceOptions&)), SLOT(saveProperties(const QString&, const DeviceOptions&)));
+	connect(dlg, &DevicePropertiesDialog::updatedSettings, this, qOverload<const QString&, const DeviceOptions&>(&MtpDevice::saveProperties));
 	if (!configured) {
-		connect(dlg, SIGNAL(cancelled()), SLOT(saveProperties()));
+		connect(dlg, &DevicePropertiesDialog::cancelled, this, qOverload<>(&MtpDevice::saveProperties));
 	}
 	DeviceOptions o = opts;
 	if (o.name.isEmpty()) {
@@ -1379,8 +1379,8 @@ void MtpDevice::addSong(const Song& s, bool overwrite, bool copyCover)
 		TranscodingJob* job = new TranscodingJob(encoder, opts.transcoderValue, s.file, destFile);
 		job->setProperty("overwrite", overwrite);
 		job->setProperty("copyCover", copyCover);
-		connect(job, SIGNAL(result(int)), SLOT(transcodeSongResult(int)));
-		connect(job, SIGNAL(percent(int)), SLOT(transcodePercent(int)));
+		connect(job, &TranscodingJob::result, this, &MtpDevice::transcodeSongResult);
+		connect(job, &TranscodingJob::percent, this, &MtpDevice::transcodePercent);
 		job->start();
 		currentSong.setExtraField(constOrigFileName, currentSong.file);
 		currentSong.file = destFile;

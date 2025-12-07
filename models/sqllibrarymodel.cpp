@@ -73,8 +73,8 @@ QString SqlLibraryModel::groupingStr(Type m)
 SqlLibraryModel::SqlLibraryModel(LibraryDb* d, QObject* p, Type top)
 	: ActionModel(p), tl(top), root(nullptr), db(d), librarySort(LibraryDb::AS_YrAlAr), albumSort(LibraryDb::AS_AlArYr)
 {
-	connect(db, SIGNAL(libraryUpdated()), SLOT(libraryUpdated()));
-	connect(db, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
+	connect(db, &LibraryDb::libraryUpdated, this, &SqlLibraryModel::libraryUpdated);
+	connect(db, &LibraryDb::error, this, &SqlLibraryModel::error);
 }
 
 void SqlLibraryModel::clear()

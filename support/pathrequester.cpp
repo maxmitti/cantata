@@ -44,8 +44,8 @@ PathRequester::PathRequester(QWidget* parent)
 	layout->addWidget(btn);
 	btn->setAutoRaise(true);
 	btn->setIcon(icon);
-	connect(btn, SIGNAL(clicked(bool)), SLOT(choose()));
-	connect(edit, SIGNAL(textChanged(const QString&)), SIGNAL(textChanged(const QString&)));
+	connect(btn, &FlatToolButton::clicked, this, &PathRequester::choose);
+	connect(edit, &LineEdit::textChanged, this, &PathRequester::textChanged);
 }
 
 void PathRequester::choose()

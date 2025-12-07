@@ -717,22 +717,22 @@ ItemView::ItemView(QWidget* p)
 	ViewEventHandler* treeViewEventHandler = new ViewEventHandler(td, treeView);
 	listView->installFilter(listViewEventHandler);
 	treeView->installFilter(treeViewEventHandler);
-	connect(searchWidget, SIGNAL(returnPressed()), this, SLOT(doSearch()));
-	connect(searchWidget, SIGNAL(textChanged(const QString)), this, SLOT(delaySearchItems()));
-	connect(searchWidget, SIGNAL(active(bool)), this, SLOT(searchActive(bool)));
-	connect(treeView, SIGNAL(itemsSelected(bool)), this, SIGNAL(itemsSelected(bool)));
-	connect(treeView, SIGNAL(itemActivated(const QModelIndex&)), this, SLOT(itemActivated(const QModelIndex&)));
-	connect(treeView, SIGNAL(doubleClicked(const QModelIndex&)), this, SIGNAL(doubleClicked(const QModelIndex&)));
-	connect(treeView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(itemClicked(const QModelIndex&)));
-	connect(listView, SIGNAL(itemsSelected(bool)), this, SIGNAL(itemsSelected(bool)));
-	connect(listView, SIGNAL(activated(const QModelIndex&)), this, SLOT(activateItem(const QModelIndex&)));
-	connect(listView, SIGNAL(itemDoubleClicked(const QModelIndex&)), this, SIGNAL(doubleClicked(const QModelIndex&)));
-	connect(listView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(itemClicked(const QModelIndex&)));
-	connect(backAction, SIGNAL(triggered()), this, SLOT(backActivated()));
-	connect(listViewEventHandler, SIGNAL(backspacePressed()), this, SLOT(backActivated()));
-	connect(title, SIGNAL(addToPlayQueue()), this, SLOT(addTitleButtonClicked()));
-	connect(title, SIGNAL(replacePlayQueue()), this, SLOT(replaceTitleButtonClicked()));
-	connect(Covers::self(), SIGNAL(loaded(Song, int)), this, SLOT(coverLoaded(Song, int)));
+	connect(searchWidget, &SearchWidget::returnPressed, this, &ItemView::doSearch);
+	connect(searchWidget, &SearchWidget::textChanged, this, &ItemView::delaySearchItems);
+	connect(searchWidget, &SearchWidget::active, this, &ItemView::searchActive);
+	connect(treeView, &TreeView::itemsSelected, this, &ItemView::itemsSelected);
+	connect(treeView, &TreeView::itemActivated, this, &ItemView::itemActivated);
+	connect(treeView, &TreeView::doubleClicked, this, &ItemView::doubleClicked);
+	connect(treeView, &TreeView::clicked, this, &ItemView::itemClicked);
+	connect(listView, &ListView::itemsSelected, this, &ItemView::itemsSelected);
+	connect(listView, &ListView::activated, this, [this](const QModelIndex& idx) { activateItem(idx); });
+	connect(listView, &ListView::itemDoubleClicked, this, &ItemView::doubleClicked);
+	connect(listView, &ListView::clicked, this, &ItemView::itemClicked);
+	connect(backAction, &Action::triggered, this, &ItemView::backActivated);
+	connect(listViewEventHandler, &ViewEventHandler::backspacePressed, this, &ItemView::backActivated);
+	connect(title, &TitleWidget::addToPlayQueue, this, &ItemView::addTitleButtonClicked);
+	connect(title, &TitleWidget::replacePlayQueue, this, &ItemView::replaceTitleButtonClicked);
+	connect(Covers::self(), qOverload<const Song&, int>(&Covers::loaded), this, &ItemView::coverLoaded);
 	searchWidget->setVisible(false);
 #ifdef Q_OS_MAC
 	treeView->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -741,8 +741,8 @@ ItemView::ItemView(QWidget* p)
 
 	QWidget::addAction(StdActions::self()->zoomInAction);
 	QWidget::addAction(StdActions::self()->zoomOutAction);
-	connect(StdActions::self()->zoomInAction, SIGNAL(triggered()), SLOT(zoomIn()));
-	connect(StdActions::self()->zoomOutAction, SIGNAL(triggered()), SLOT(zoomOut()));
+	connect(StdActions::self()->zoomInAction, &Action::triggered, this, &ItemView::zoomIn);
+	connect(StdActions::self()->zoomOutAction, &Action::triggered, this, &ItemView::zoomOut);
 }
 
 ItemView::~ItemView()
@@ -801,10 +801,10 @@ void ItemView::allowGroupedView()
 		groupedView->installFilter(viewHandler);
 		groupedView->setAutoExpand(false);
 		groupedView->setMultiLevel(true);
-		connect(groupedView, SIGNAL(itemsSelected(bool)), this, SIGNAL(itemsSelected(bool)));
-		connect(groupedView, SIGNAL(itemActivated(const QModelIndex&)), this, SLOT(itemActivated(const QModelIndex&)));
-		connect(groupedView, SIGNAL(doubleClicked(const QModelIndex&)), this, SIGNAL(doubleClicked(const QModelIndex&)));
-		connect(groupedView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(itemClicked(const QModelIndex&)));
+		connect(groupedView, &GroupedView::itemsSelected, this, &ItemView::itemsSelected);
+		connect(groupedView, &GroupedView::itemActivated, this, &ItemView::itemActivated);
+		connect(groupedView, &GroupedView::doubleClicked, this, &ItemView::doubleClicked);
+		connect(groupedView, &GroupedView::clicked, this, &ItemView::itemClicked);
 		groupedView->setProperty(ProxyStyle::constModifyFrameProp, ProxyStyle::VF_Side | ProxyStyle::VF_Top);
 #ifdef Q_OS_MAC
 		groupedView->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -821,10 +821,10 @@ void ItemView::allowTableView(TableView* v)
 		tableView->setProperty(constPageProp, stackedWidget->count() - 1);
 		ViewEventHandler* viewHandler = new ViewEventHandler(nullptr, tableView);
 		tableView->installFilter(viewHandler);
-		connect(tableView, SIGNAL(itemsSelected(bool)), this, SIGNAL(itemsSelected(bool)));
-		connect(tableView, SIGNAL(itemActivated(const QModelIndex&)), this, SLOT(itemActivated(const QModelIndex&)));
-		connect(tableView, SIGNAL(doubleClicked(const QModelIndex&)), this, SIGNAL(doubleClicked(const QModelIndex&)));
-		connect(tableView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(itemClicked(const QModelIndex&)));
+		connect(tableView, &TableView::itemsSelected, this, &ItemView::itemsSelected);
+		connect(tableView, &TableView::itemActivated, this, &ItemView::itemActivated);
+		connect(tableView, &TableView::doubleClicked, this, &ItemView::doubleClicked);
+		connect(tableView, &TableView::clicked, this, &ItemView::itemClicked);
 		tableView->setProperty(ProxyStyle::constModifyFrameProp, ProxyStyle::VF_Side | ProxyStyle::VF_Top);
 #ifdef Q_OS_MAC
 		tableView->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -842,10 +842,10 @@ void ItemView::allowCategorized()
 		//KCategorizedView seems to handle mouse-over events better
 		//ViewEventHandler *viewHandler=new ViewEventHandler(nullptr, categorizedView);
 		//categorizedView->installFilter(viewHandler);
-		connect(categorizedView, SIGNAL(itemsSelected(bool)), this, SIGNAL(itemsSelected(bool)));
-		connect(categorizedView, SIGNAL(itemActivated(const QModelIndex&)), this, SLOT(activateItem(const QModelIndex&)));
-		connect(categorizedView, SIGNAL(itemDoubleClicked(const QModelIndex&)), this, SIGNAL(doubleClicked(const QModelIndex&)));
-		connect(categorizedView, SIGNAL(itemClicked(const QModelIndex&)), this, SLOT(itemClicked(const QModelIndex&)));
+		connect(categorizedView, &CategorizedView::itemsSelected, this, &ItemView::itemsSelected);
+		connect(categorizedView, &CategorizedView::itemActivated, this, [this](const QModelIndex& idx) { activateItem(idx); });
+		connect(categorizedView, &CategorizedView::itemDoubleClicked, this, &ItemView::doubleClicked);
+		connect(categorizedView, &CategorizedView::itemClicked, this, &ItemView::itemClicked);
 		categorizedView->setProperty(ProxyStyle::constModifyFrameProp, ProxyStyle::VF_Side | ProxyStyle::VF_Top);
 #ifdef Q_OS_MAC
 		categorizedView->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -1154,12 +1154,12 @@ QAbstractItemView* ItemView::view() const
 void ItemView::setModel(QAbstractItemModel* m)
 {
 	if (itemModel) {
-		disconnect(itemModel, SIGNAL(modelReset()), this, SLOT(modelReset()));
+		disconnect(itemModel, &QAbstractItemModel::modelReset, this, &ItemView::modelReset);
 		if (qobject_cast<QAbstractProxyModel*>(itemModel)) {
-			disconnect(static_cast<QAbstractProxyModel*>(itemModel)->sourceModel(), SIGNAL(dataChanged(QModelIndex, QModelIndex)), this, SLOT(dataChanged(QModelIndex, QModelIndex)));
+			disconnect(static_cast<QAbstractProxyModel*>(itemModel)->sourceModel(), &QAbstractProxyModel::dataChanged, this, &ItemView::dataChanged);
 		}
 		else {
-			disconnect(itemModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this, SLOT(dataChanged(QModelIndex, QModelIndex)));
+			disconnect(itemModel, &QAbstractItemModel::dataChanged, this, &ItemView::dataChanged);
 		}
 	}
 	itemModel = m;
@@ -1168,12 +1168,12 @@ void ItemView::setModel(QAbstractItemModel* m)
 		setMode(Mode_SimpleTree);
 	}
 	if (m) {
-		connect(m, SIGNAL(modelReset()), this, SLOT(modelReset()));
+		connect(m, &QAbstractItemModel::modelReset, this, &ItemView::modelReset);
 		if (qobject_cast<QAbstractProxyModel*>(m)) {
-			connect(static_cast<QAbstractProxyModel*>(m)->sourceModel(), SIGNAL(dataChanged(QModelIndex, QModelIndex)), this, SLOT(dataChanged(QModelIndex, QModelIndex)));
+			connect(static_cast<QAbstractProxyModel*>(m)->sourceModel(), &QAbstractProxyModel::dataChanged, this, &ItemView::dataChanged);
 		}
 		else {
-			connect(m, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this, SLOT(dataChanged(QModelIndex, QModelIndex)));
+			connect(m, &QAbstractItemModel::dataChanged, this, &ItemView::dataChanged);
 		}
 	}
 	view()->setModel(m);
@@ -1510,18 +1510,13 @@ void ItemView::setSearchCategory(const QString& id)
 	searchWidget->setCategory(id);
 }
 
-void ItemView::showSpinner(bool v)
+void ItemView::showSpinner()
 {
-	if (v) {
-		if (!spinner) {
-			spinner = new Spinner(this);
-		}
-		spinner->setWidget(view());
-		spinner->start();
+	if (!spinner) {
+		spinner = new Spinner(this);
 	}
-	else {
-		hideSpinner();
-	}
+	spinner->setWidget(view());
+	spinner->start();
 }
 
 void ItemView::hideSpinner()
@@ -1819,7 +1814,7 @@ void ItemView::delaySearchItems()
 		if (!searchTimer) {
 			searchTimer = new QTimer(this);
 			searchTimer->setSingleShot(true);
-			connect(searchTimer, SIGNAL(timeout()), this, SLOT(doSearch()));
+			connect(searchTimer, &QTimer::timeout, this, &ItemView::doSearch);
 		}
 		int len = searchWidget->text().trimmed().length();
 		searchTimer->start(qMin(qMax(minSearchDebounce, len < 2 ? 1000u : len < 4 ? 750u

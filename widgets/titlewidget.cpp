@@ -91,9 +91,9 @@ TitleWidget::TitleWidget(QWidget* p)
 	chevron->setAttribute(Qt::WA_TransparentForMouseEvents);
 	viewport()->installEventFilter(this);
 	viewport()->setAttribute(Qt::WA_Hover);
-	connect(Covers::self(), SIGNAL(cover(Song, QImage, QString)), this, SLOT(coverRetrieved(Song, QImage, QString)));
-	connect(Covers::self(), SIGNAL(coverUpdated(Song, QImage, QString)), this, SLOT(coverRetrieved(Song, QImage, QString)));
-	connect(Covers::self(), SIGNAL(artistImage(Song, QImage, QString)), this, SLOT(coverRetrieved(Song, QImage, QString)));
+	connect(Covers::self(), &Covers::cover, this, &TitleWidget::coverRetrieved);
+	connect(Covers::self(), &Covers::coverUpdated, this, &TitleWidget::coverRetrieved);
+	connect(Covers::self(), &Covers::artistImage, this, &TitleWidget::coverRetrieved);
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(2);
 	textLayout->setContentsMargins(0, 0, 0, 0);
@@ -139,8 +139,8 @@ void TitleWidget::update(const Song& sng, const QIcon& icon, const QString& text
 			replace->setToolTip(tr("Add All And Replace Play Queue"));
 			l->addWidget(replace);
 			l->addWidget(add);
-			connect(add, SIGNAL(clicked()), this, SIGNAL(addToPlayQueue()));
-			connect(replace, SIGNAL(clicked()), this, SIGNAL(replacePlayQueue()));
+			connect(add, &ToolButton::clicked, this, &TitleWidget::addToPlayQueue);
+			connect(replace, &ToolButton::clicked, this, &TitleWidget::replacePlayQueue);
 			static_cast<QHBoxLayout*>(layout())->addWidget(controls);
 		}
 		controls->setVisible(true);

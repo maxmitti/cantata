@@ -31,11 +31,11 @@ ScrobblingLove::ScrobblingLove(QWidget* p)
 	love = Icon::fa(fa::fa_regular, fa::fa_heart);
 	loved = Icon::fa(fa::fa_solid, fa::fa_heart);
 	setIcon(love);
-	connect(Scrobbler::self(), SIGNAL(loveEnabled(bool)), SLOT(setVisible(bool)));
-	connect(Scrobbler::self(), SIGNAL(songChanged(bool)), SLOT(songChanged(bool)));
-	connect(Scrobbler::self(), SIGNAL(scrobblerChanged()), SLOT(scrobblerChanged()));
+	connect(Scrobbler::self(), &Scrobbler::loveEnabled, this, &ScrobblingLove::setVisible);
+	connect(Scrobbler::self(), &Scrobbler::songChanged, this, &ScrobblingLove::songChanged);
+	connect(Scrobbler::self(), &Scrobbler::scrobblerChanged, this, &ScrobblingLove::scrobblerChanged);
 	setVisible(Scrobbler::self()->isLoveEnabled());
-	connect(this, SIGNAL(clicked()), this, SLOT(sendLove()));
+	connect(this, &ScrobblingLove::clicked, this, &ScrobblingLove::sendLove);
 	songChanged(false);
 }
 

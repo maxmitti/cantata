@@ -42,24 +42,24 @@ PlaylistRuleDialog::PlaylistRuleDialog(QWidget* parent, bool isDynamic)
 	enableButton(Ok, false);
 	setCaption(isDynamic ? tr("Dynamic Rule") : tr("Smart Rule"));
 
-	connect(artistText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
-	connect(composerText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
-	connect(commentText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
+	connect(artistText, &CompletionCombo::textChanged, this, &PlaylistRuleDialog::enableOkButton);
+	connect(composerText, &CompletionCombo::textChanged, this, &PlaylistRuleDialog::enableOkButton);
+	connect(commentText, &LineEdit::textChanged, this, &PlaylistRuleDialog::enableOkButton);
 	if (isDynamic) {
-		connect(similarArtistsText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
+		connect(similarArtistsText, &CompletionCombo::textChanged, this, &PlaylistRuleDialog::enableOkButton);
 	}
 	else {
 		REMOVE(similarArtistsText)
 		REMOVE(similarArtistsTextLabel)
 	}
-	connect(albumArtistText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
-	connect(albumText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
-	connect(titleText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
-	connect(genreText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
-	connect(filenameText, SIGNAL(textChanged(const QString&)), SLOT(enableOkButton()));
-	connect(dateFromSpin, SIGNAL(valueChanged(int)), SLOT(enableOkButton()));
-	connect(dateToSpin, SIGNAL(valueChanged(int)), SLOT(enableOkButton()));
-	connect(exactCheck, SIGNAL(toggled(bool)), SLOT(enableOkButton()));
+	connect(albumArtistText, &CompletionCombo::textChanged, this, &PlaylistRuleDialog::enableOkButton);
+	connect(albumText, &CompletionCombo::textChanged, this, &PlaylistRuleDialog::enableOkButton);
+	connect(titleText, &LineEdit::textChanged, this, &PlaylistRuleDialog::enableOkButton);
+	connect(genreText, &CompletionCombo::textChanged, this, &PlaylistRuleDialog::enableOkButton);
+	connect(filenameText, &LineEdit::textChanged, this, &PlaylistRuleDialog::enableOkButton);
+	connect(dateFromSpin, &QSpinBox::valueChanged, this, &PlaylistRuleDialog::enableOkButton);
+	connect(dateToSpin, &QSpinBox::valueChanged, this, &PlaylistRuleDialog::enableOkButton);
+	connect(exactCheck, &QCheckBox::toggled, this, &PlaylistRuleDialog::enableOkButton);
 
 	QSet<QString> artists;
 	QSet<QString> albumArtists;

@@ -276,7 +276,7 @@ MPDConnection::MPDConnection()
 	qRegisterMetaType<Stream>("Stream");
 	qRegisterMetaType<QList<Stream>>("QList<Stream>");
 #if (defined Q_OS_LINUX && defined QT_QTDBUS_FOUND) || (defined Q_OS_MAC && defined IOKIT_FOUND)
-	connect(PowerManagement::self(), SIGNAL(resuming()), this, SLOT(reconnect()));
+	connect(PowerManagement::self(), &PowerManagement::resuming, this, &MPDConnection::reconnect);
 #endif
 	MPDParseUtils::setSingleTracksFolders(Utils::listToSet(Configuration().get("singleTracksFolders", QStringList())));
 }
@@ -287,9 +287,9 @@ MPDConnection::~MPDConnection()
 		sendCommand("stop");
 		stopVolumeFade();
 	}
-	//     disconnect(&sock, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
-	disconnect(&idleSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
-	disconnect(&idleSocket, SIGNAL(readyRead()), this, SLOT(idleDataReady()));
+	//     disconnect(&sock, &MpdSocket::stateChanged, this, &MPDConnection::onSocketStateChanged);
+	disconnect(&idleSocket, &MpdSocket::stateChanged, this, &MPDConnection::onSocketStateChanged);
+	disconnect(&idleSocket, &MpdSocket::readyRead, this, &MPDConnection::idleDataReady);
 	sock.disconnectFromHost();
 	idleSocket.disconnectFromHost();
 }
@@ -301,8 +301,8 @@ void MPDConnection::start()
 		connTimer = thread->createTimer(this);
 		connTimer->setSingleShot(false);
 		moveToThread(thread);
-		connect(thread, SIGNAL(finished()), connTimer, SLOT(stop()));
-		connect(connTimer, SIGNAL(timeout()), SLOT(getStatus()));
+		connect(thread, &Thread::finished, connTimer, &QTimer::stop);
+		connect(connTimer, &QTimer::timeout, this, &MPDConnection::getStatus);
 		thread->start();
 	}
 }
@@ -389,8 +389,8 @@ MPDConnection::ConnectionReturn MPDConnection::connectToMPD(MpdSocket& socket, b
 			if (enableIdle) {
 				dynamicId.clear();
 				setupRemoteDynamic();
-				connect(&socket, SIGNAL(readyRead()), this, SLOT(idleDataReady()), Qt::QueuedConnection);
-				connect(&socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)), Qt::QueuedConnection);
+				connect(&socket, &MpdSocket::readyRead, this, &MPDConnection::idleDataReady, Qt::QueuedConnection);
+				connect(&socket, &MpdSocket::stateChanged, this, &MPDConnection::onSocketStateChanged, Qt::QueuedConnection);
 				DBUG << (void*)(&socket) << "Enabling idle";
 				socket.write("idle\n");
 				socket.waitForBytesWritten();
@@ -477,8 +477,8 @@ void MPDConnection::disconnectFromMPD()
 {
 	DBUG << "disconnectFromMPD";
 	connTimer->stop();
-	disconnect(&idleSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
-	disconnect(&idleSocket, SIGNAL(readyRead()), this, SLOT(idleDataReady()));
+	disconnect(&idleSocket, &MpdSocket::stateChanged, this, &MPDConnection::onSocketStateChanged);
+	disconnect(&idleSocket, &MpdSocket::readyRead, this, &MPDConnection::idleDataReady);
 	if (QAbstractSocket::ConnectedState == sock.state()) {
 		sock.disconnectFromHost();
 	}
@@ -543,7 +543,7 @@ void MPDConnection::reconnect()
 			if (!reconnectTimer) {
 				reconnectTimer = new QTimer(this);
 				reconnectTimer->setSingleShot(true);
-				connect(reconnectTimer, SIGNAL(timeout()), this, SLOT(reconnect()), Qt::QueuedConnection);
+				connect(reconnectTimer, &QTimer::timeout, this, &MPDConnection::reconnect, Qt::QueuedConnection);
 			}
 			if (std::abs(now - reconnectStart) > 1) {
 				emit info(tr("Connecting to %1").arg(details.description()));
@@ -1659,7 +1659,7 @@ void MPDConnection::onSocketStateChanged(QAbstractSocket::SocketState socketStat
 {
 	if (socketState == QAbstractSocket::ClosingState) {
 		bool wasConnected = State_Connected == state;
-		disconnect(&idleSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
+		disconnect(&idleSocket, &MpdSocket::stateChanged, this, &MPDConnection::onSocketStateChanged);
 		DBUG << "onSocketStateChanged";
 		if (QAbstractSocket::ConnectedState == idleSocket.state()) {
 			idleSocket.disconnectFromHost();
@@ -1673,7 +1673,7 @@ void MPDConnection::onSocketStateChanged(QAbstractSocket::SocketState socketStat
 			emit error(errorString(status), true);
 		}
 		if (QAbstractSocket::ConnectedState == idleSocket.state()) {
-			connect(&idleSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)), Qt::QueuedConnection);
+			connect(&idleSocket, &MpdSocket::stateChanged, this, &MPDConnection::onSocketStateChanged, Qt::QueuedConnection);
 		}
 	}
 }
@@ -1688,7 +1688,7 @@ void MPDConnection::parseIdleReturn(const QByteArray& data)
 	Response response(data.endsWith(constOkNlValue), data);
 	if (!response.ok) {
 		DBUG << "idle failed? reconnect";
-		disconnect(&idleSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
+		disconnect(&idleSocket, &MpdSocket::stateChanged, this, &MPDConnection::onSocketStateChanged);
 		if (QAbstractSocket::ConnectedState == idleSocket.state()) {
 			idleSocket.disconnectFromHost();
 		}
@@ -2741,8 +2741,8 @@ void MpdSocket::connectToHost(const QString& hostName, quint16 port, QIODevice::
 		deleteTcp();
 		if (!local) {
 			local = new QLocalSocket(this);
-			connect(local, SIGNAL(stateChanged(QLocalSocket::LocalSocketState)), this, SLOT(localStateChanged(QLocalSocket::LocalSocketState)));
-			connect(local, SIGNAL(readyRead()), this, SIGNAL(readyRead()));
+			connect(local, &QLocalSocket::stateChanged, this, &MpdSocket::localStateChanged);
+			connect(local, &QLocalSocket::readyRead, this, &MpdSocket::readyRead);
 		}
 		DBUG << "Connecting to LOCAL socket";
 		QString host = Utils::tildaToHome(hostName);
@@ -2755,8 +2755,8 @@ void MpdSocket::connectToHost(const QString& hostName, quint16 port, QIODevice::
 		deleteLocal();
 		if (!tcp) {
 			tcp = new QTcpSocket(this);
-			connect(tcp, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SIGNAL(stateChanged(QAbstractSocket::SocketState)));
-			connect(tcp, SIGNAL(readyRead()), this, SIGNAL(readyRead()));
+			connect(tcp, &QTcpSocket::stateChanged, this, &MpdSocket::stateChanged);
+			connect(tcp, &QTcpSocket::readyRead, this, &MpdSocket::readyRead);
 		}
 		DBUG << "Connecting to TCP socket";
 		tcp->connectToHost(hostName, port, mode);
@@ -2771,8 +2771,8 @@ void MpdSocket::localStateChanged(QLocalSocket::LocalSocketState state)
 void MpdSocket::deleteTcp()
 {
 	if (tcp) {
-		disconnect(tcp, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SIGNAL(stateChanged(QAbstractSocket::SocketState)));
-		disconnect(tcp, SIGNAL(readyRead()), this, SIGNAL(readyRead()));
+		disconnect(tcp, &QTcpSocket::stateChanged, this, &MpdSocket::stateChanged);
+		disconnect(tcp, &QTcpSocket::readyRead, this, &MpdSocket::readyRead);
 		tcp->deleteLater();
 		tcp = nullptr;
 	}
@@ -2781,8 +2781,8 @@ void MpdSocket::deleteTcp()
 void MpdSocket::deleteLocal()
 {
 	if (local) {
-		disconnect(local, SIGNAL(stateChanged(QLocalSocket::LocalSocketState)), this, SLOT(localStateChanged(QLocalSocket::LocalSocketState)));
-		disconnect(local, SIGNAL(readyRead()), this, SIGNAL(readyRead()));
+		disconnect(local, &QLocalSocket::stateChanged, this, &MpdSocket::localStateChanged);
+		disconnect(local, &QLocalSocket::readyRead, this, &MpdSocket::readyRead);
 		local->deleteLater();
 		local = nullptr;
 	}

@@ -73,17 +73,17 @@ AlbumView::AlbumView(QWidget* p)
 	// Full width covers not working under windows. Issue #1252
 	fullWidthCoverAction = new Action(tr("Full Width Cover"), this);
 	fullWidthCoverAction->setCheckable(true);
-	connect(fullWidthCoverAction, SIGNAL(toggled(bool)), this, SLOT(setScaleImage(bool)));
+	connect(fullWidthCoverAction, &Action::toggled, this, &AlbumView::setScaleImage);
 	fullWidthCoverAction->setChecked(Configuration(metaObject()->className()).get("fullWidthCover", false));
 #endif
 	refreshAction = ActionCollection::get()->createAction("refreshalbum", tr("Refresh Album Information"), Icons::self()->refreshIcon);
-	connect(refreshAction, SIGNAL(triggered()), this, SLOT(refresh()));
-	connect(engine, SIGNAL(searchResult(QString, QString)), this, SLOT(searchResponse(QString, QString)));
-	connect(Covers::self(), SIGNAL(cover(Song, QImage, QString)), SLOT(coverRetrieved(Song, QImage, QString)));
-	connect(Covers::self(), SIGNAL(coverUpdated(Song, QImage, QString)), SLOT(coverUpdated(Song, QImage, QString)));
-	connect(text, SIGNAL(anchorClicked(QUrl)), SLOT(playSong(QUrl)));
+	connect(refreshAction, &Action::triggered, this, &AlbumView::refresh);
+	connect(engine, &ContextEngine::searchResult, this, &AlbumView::searchResponse);
+	connect(Covers::self(), &Covers::cover, this, &AlbumView::coverRetrieved);
+	connect(Covers::self(), &Covers::coverUpdated, this, &AlbumView::coverUpdated);
+	connect(text, &TextBrowser::anchorClicked, this, qOverload<const QUrl&>(&AlbumView::playSong));
 	text->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(text, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
+	connect(text, &TextBrowser::customContextMenuRequested, this, &AlbumView::showContextMenu);
 	setStandardHeader(tr("Album"));
 	int imageSize = fontMetrics().height() * 18;
 	setPicSize(QSize(imageSize, imageSize));
@@ -91,7 +91,7 @@ AlbumView::AlbumView(QWidget* p)
 	if (ArtistView::constCacheAge > 0) {
 		clearCache();
 		QTimer* timer = new QTimer(this);
-		connect(timer, SIGNAL(timeout()), this, SLOT(clearCache()));
+		connect(timer, &QTimer::timeout, this, &AlbumView::clearCache);
 		timer->start((int)((ArtistView::constCacheAge / 2.0) * 1000 * 24 * 60 * 60));
 	}
 }

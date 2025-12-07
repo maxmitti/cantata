@@ -87,10 +87,10 @@ bool MediaKeys::activate(MultiMediaKeysInterface* iface)
 		return false;
 	}
 	if (iface->activate()) {
-		QObject::connect(iface, SIGNAL(playPause()), StdActions::self()->playPauseTrackAction, SIGNAL(triggered()));
-		QObject::connect(iface, SIGNAL(stop()), StdActions::self()->stopPlaybackAction, SIGNAL(triggered()));
-		QObject::connect(iface, SIGNAL(next()), StdActions::self()->nextTrackAction, SIGNAL(triggered()));
-		QObject::connect(iface, SIGNAL(previous()), StdActions::self()->prevTrackAction, SIGNAL(triggered()));
+		QObject::connect(iface, &MultiMediaKeysInterface::playPause, StdActions::self()->playPauseTrackAction, &Action::emitTriggered);
+		QObject::connect(iface, &MultiMediaKeysInterface::stop, StdActions::self()->stopPlaybackAction, &Action::emitTriggered);
+		QObject::connect(iface, &MultiMediaKeysInterface::next, StdActions::self()->nextTrackAction, &Action::emitTriggered);
+		QObject::connect(iface, &MultiMediaKeysInterface::previous, StdActions::self()->prevTrackAction, &Action::emitTriggered);
 		return true;
 	}
 	return false;
@@ -101,9 +101,9 @@ void MediaKeys::deactivate(MultiMediaKeysInterface* iface)
 	if (!iface) {
 		return;
 	}
-	QObject::disconnect(iface, SIGNAL(playPause()), StdActions::self()->playPauseTrackAction, SIGNAL(triggered()));
-	QObject::disconnect(iface, SIGNAL(stop()), StdActions::self()->stopPlaybackAction, SIGNAL(triggered()));
-	QObject::disconnect(iface, SIGNAL(next()), StdActions::self()->nextTrackAction, SIGNAL(triggered()));
-	QObject::disconnect(iface, SIGNAL(previous()), StdActions::self()->prevTrackAction, SIGNAL(triggered()));
+	QObject::disconnect(iface, &MultiMediaKeysInterface::playPause, StdActions::self()->playPauseTrackAction, &Action::emitTriggered);
+	QObject::disconnect(iface, &MultiMediaKeysInterface::stop, StdActions::self()->stopPlaybackAction, &Action::emitTriggered);
+	QObject::disconnect(iface, &MultiMediaKeysInterface::next, StdActions::self()->nextTrackAction, &Action::emitTriggered);
+	QObject::disconnect(iface, &MultiMediaKeysInterface::previous, StdActions::self()->prevTrackAction, &Action::emitTriggered);
 	iface->deactivate();
 }

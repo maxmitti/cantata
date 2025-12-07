@@ -31,12 +31,12 @@ ToggleList::ToggleList(QWidget* p)
 	: QWidget(p)
 {
 	setupUi(this);
-	connect(upButton, SIGNAL(clicked()), SLOT(moveUp()));
-	connect(downButton, SIGNAL(clicked()), SLOT(moveDown()));
-	connect(addButton, SIGNAL(clicked()), SLOT(add()));
-	connect(removeButton, SIGNAL(clicked()), SLOT(remove()));
-	connect(available, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), SLOT(availableChanged(QListWidgetItem*)));
-	connect(selected, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), SLOT(selectedChanged(QListWidgetItem*)));
+	connect(upButton, &FlatToolButton::clicked, this, &ToggleList::moveUp);
+	connect(downButton, &FlatToolButton::clicked, this, &ToggleList::moveDown);
+	connect(addButton, &FlatToolButton::clicked, this, &ToggleList::add);
+	connect(removeButton, &FlatToolButton::clicked, this, &ToggleList::remove);
+	connect(available, &QListWidget::currentItemChanged, this, &ToggleList::availableChanged);
+	connect(selected, &QListWidget::currentItemChanged, this, &ToggleList::selectedChanged);
 	upButton->setIcon(Icons::self()->upIcon);
 	downButton->setIcon(Icons::self()->downIcon);
 	bool rtl = isRightToLeft();

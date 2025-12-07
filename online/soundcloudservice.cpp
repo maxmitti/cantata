@@ -82,7 +82,7 @@ void SoundCloudService::search(const QString& key, const QString& value)
 	QNetworkRequest req(searchUrl);
 	req.setRawHeader("Accept", "application/json");
 	job = NetworkAccessManager::self()->get(req);
-	connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
+	connect(job, &NetworkJob::finished, this, &SoundCloudService::jobFinished);
 	emit searching();
 	emit dataChanged(QModelIndex(), QModelIndex());
 }

@@ -119,7 +119,7 @@ void DevicePropertiesWidget::update(const QString& path, const DeviceOptions& op
 	}
 	if (props & Prop_Name) {
 		name->setText(opts.name);
-		connect(name, SIGNAL(textChanged(const QString&)), SLOT(checkSaveable()));
+		connect(name, &LineEdit::textChanged, this, &DevicePropertiesWidget::checkSaveable);
 	}
 	else {
 		REMOVE(name)
@@ -145,7 +145,7 @@ void DevicePropertiesWidget::update(const QString& path, const DeviceOptions& op
 
 	if (props & Prop_Folder) {
 		musicFolder->setText(Utils::convertPathForDisplay(path));
-		connect(musicFolder, SIGNAL(textChanged(const QString&)), this, SLOT(checkSaveable()));
+		connect(musicFolder, &PathRequester::textChanged, this, &DevicePropertiesWidget::checkSaveable);
 		if (disabledProps & Prop_Folder) {
 			musicFolder->setDisabled(true);
 		}
@@ -184,8 +184,8 @@ void DevicePropertiesWidget::update(const QString& path, const DeviceOptions& op
 			coverMaxSize->setCurrentIndex(0);
 		}
 		albumCovers->setValidator(new CoverNameValidator(this));
-		connect(albumCovers, SIGNAL(editTextChanged(const QString&)), this, SLOT(albumCoversChanged()));
-		connect(coverMaxSize, SIGNAL(currentIndexChanged(int)), this, SLOT(checkSaveable()));
+		connect(albumCovers, &QComboBox::editTextChanged, this, &DevicePropertiesWidget::albumCoversChanged);
+		connect(coverMaxSize, &QComboBox::currentIndexChanged, this, &DevicePropertiesWidget::checkSaveable);
 	}
 	else {
 		REMOVE(albumCovers);
@@ -195,21 +195,21 @@ void DevicePropertiesWidget::update(const QString& path, const DeviceOptions& op
 	}
 	if (props & Prop_Va) {
 		fixVariousArtists->setChecked(opts.fixVariousArtists);
-		connect(fixVariousArtists, SIGNAL(stateChanged(int)), this, SLOT(checkSaveable()));
+		connect(fixVariousArtists, &QCheckBox::checkStateChanged, this, &DevicePropertiesWidget::checkSaveable);
 	}
 	else {
 		REMOVE(fixVariousArtists);
 	}
 	if (props & Prop_Cache) {
 		useCache->setChecked(opts.useCache);
-		connect(useCache, SIGNAL(stateChanged(int)), this, SLOT(checkSaveable()));
+		connect(useCache, &QCheckBox::checkStateChanged, this, &DevicePropertiesWidget::checkSaveable);
 	}
 	else {
 		REMOVE(useCache);
 	}
 	if (props & Prop_AutoScan) {
 		autoScan->setChecked(opts.autoScan);
-		connect(autoScan, SIGNAL(stateChanged(int)), this, SLOT(checkSaveable()));
+		connect(autoScan, &QCheckBox::checkStateChanged, this, &DevicePropertiesWidget::checkSaveable);
 	}
 	else {
 		REMOVE(autoScan);
@@ -233,7 +233,7 @@ void DevicePropertiesWidget::update(const QString& path, const DeviceOptions& op
 					break;
 				}
 			}
-			connect(transcoderWhen, SIGNAL(currentIndexChanged(int)), this, SLOT(checkSaveable()));
+			connect(transcoderWhen, &QComboBox::currentIndexChanged, this, &DevicePropertiesWidget::checkSaveable);
 		}
 		else {
 			transcoderFrame->setTitle(tr("Encoder"));
@@ -273,8 +273,8 @@ void DevicePropertiesWidget::update(const QString& path, const DeviceOptions& op
 				}
 			}
 		}
-		connect(transcoderName, SIGNAL(currentIndexChanged(int)), this, SLOT(transcoderChanged()));
-		connect(transcoderValue, SIGNAL(valueChanged(int)), this, SLOT(checkSaveable()));
+		connect(transcoderName, &QComboBox::currentIndexChanged, this, &DevicePropertiesWidget::transcoderChanged);
+		connect(transcoderValue, &ValueSlider::valueChanged, this, &DevicePropertiesWidget::checkSaveable);
 	}
 	else {
 		REMOVE(transcoderFrame);
@@ -298,23 +298,23 @@ void DevicePropertiesWidget::update(const QString& path, const DeviceOptions& op
 				break;
 			}
 		}
-		connect(defaultVolume, SIGNAL(currentIndexChanged(int)), this, SLOT(checkSaveable()));
+		connect(defaultVolume, &QComboBox::currentIndexChanged, this, &DevicePropertiesWidget::checkSaveable);
 	}
 
 	origMusicFolder = Utils::fixPath(path);
 	if (props & Prop_FileName) {
-		connect(configFilename, SIGNAL(clicked()), SLOT(configureFilenameScheme()));
-		connect(filenameScheme, SIGNAL(textChanged(const QString&)), this, SLOT(checkSaveable()));
-		connect(vfatSafe, SIGNAL(stateChanged(int)), this, SLOT(checkSaveable()));
-		connect(asciiOnly, SIGNAL(stateChanged(int)), this, SLOT(checkSaveable()));
-		connect(ignoreThe, SIGNAL(stateChanged(int)), this, SLOT(checkSaveable()));
-		connect(replaceSpaces, SIGNAL(stateChanged(int)), this, SLOT(checkSaveable()));
+		connect(configFilename, &QToolButton::clicked, this, &DevicePropertiesWidget::configureFilenameScheme);
+		connect(filenameScheme, &LineEdit::textChanged, this, &DevicePropertiesWidget::checkSaveable);
+		connect(vfatSafe, &QCheckBox::checkStateChanged, this, &DevicePropertiesWidget::checkSaveable);
+		connect(asciiOnly, &QCheckBox::checkStateChanged, this, &DevicePropertiesWidget::checkSaveable);
+		connect(ignoreThe, &QCheckBox::checkStateChanged, this, &DevicePropertiesWidget::checkSaveable);
+		connect(replaceSpaces, &QCheckBox::checkStateChanged, this, &DevicePropertiesWidget::checkSaveable);
 	}
 
 	if (albumCovers) {
 		albumCoversChanged();
 	}
-	QTimer::singleShot(0, this, SLOT(setSize()));
+	QTimer::singleShot(0, this, &DevicePropertiesWidget::setSize);
 }
 
 void DevicePropertiesWidget::transcoderChanged()
@@ -376,7 +376,7 @@ void DevicePropertiesWidget::configureFilenameScheme()
 {
 	if (!schemeDlg) {
 		schemeDlg = new FilenameSchemeDialog(this);
-		connect(schemeDlg, SIGNAL(scheme(const QString&)), filenameScheme, SLOT(setText(const QString&)));
+		connect(schemeDlg, &FilenameSchemeDialog::scheme, filenameScheme, &LineEdit::setText);
 	}
 	schemeDlg->show(settings());
 }

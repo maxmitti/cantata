@@ -45,17 +45,17 @@ OnlineDbWidget::OnlineDbWidget(OnlineDbService* s, QWidget* p)
 	menu->addAction(createViewMenu(QList<ItemView::Mode>() << ItemView::Mode_BasicTree << ItemView::Mode_SimpleTree
 	                                                       << ItemView::Mode_DetailedTree << ItemView::Mode_List));
 	menu->addAction(createMenuGroup(tr("Group By"), QList<MenuItem>() << MenuItem(tr("Genre"), SqlLibraryModel::T_Genre) << MenuItem(tr("Artist"), SqlLibraryModel::T_Artist),
-	                                srv->topLevel(), this, SLOT(groupByChanged())));
+	                                srv->topLevel(), this, &OnlineDbWidget::groupByChanged));
 	Action* configureAction = new Action(Icons::self()->configureIcon, tr("Configure"), this);
-	connect(configureAction, SIGNAL(triggered()), SLOT(configure()));
+	connect(configureAction, &Action::triggered, this, &OnlineDbWidget::configure);
 	menu->addAction(configureAction);
 	init(ReplacePlayQueue | AppendToPlayQueue | Refresh, QList<QWidget*>() << menu);
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
-	connect(view, SIGNAL(updateToPlayQueue(QModelIndex, bool)), this, SLOT(updateToPlayQueue(QModelIndex, bool)));
+	connect(view, &ItemView::headerClicked, this, &OnlineDbWidget::headerClicked);
+	connect(view, &ItemView::updateToPlayQueue, this, &OnlineDbWidget::updateToPlayQueue);
 	view->setOpenAfterSearch(SqlLibraryModel::T_Album != srv->topLevel());
 	view->addAction(StdActions::self()->addToStoredPlaylistAction);
-	connect(StdActions::self()->addRandomAlbumToPlayQueueAction, SIGNAL(triggered()), SLOT(addRandomAlbum()));
-	connect(srv, SIGNAL(modelReset()), this, SLOT(modelReset()));
+	connect(StdActions::self()->addRandomAlbumToPlayQueueAction, &Action::triggered, this, &OnlineDbWidget::addRandomAlbum);
+	connect(srv, &OnlineDbService::modelReset, this, &OnlineDbWidget::modelReset);
 }
 
 OnlineDbWidget::~OnlineDbWidget()
@@ -104,7 +104,7 @@ void OnlineDbWidget::showEvent(QShowEvent* e)
 		srv->open();
 	}
 	else {
-		QTimer::singleShot(0, this, SLOT(firstTimePrompt()));
+		QTimer::singleShot(0, this, &OnlineDbWidget::firstTimePrompt);
 	}
 }
 

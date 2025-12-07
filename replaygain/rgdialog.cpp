@@ -126,9 +126,9 @@ RgDialog::RgDialog(QWidget* parent)
 	enableButton(Ok, false);
 	enableButton(User1, false);
 	qRegisterMetaType<Tags::ReplayGain>("Tags::ReplayGain");
-	connect(combo, SIGNAL(currentIndexChanged(int)), SLOT(toggleDisplay()));
-	connect(view, SIGNAL(itemSelectionChanged()), SLOT(controlRemoveAct()));
-	connect(removeAct, SIGNAL(triggered()), SLOT(removeItems()));
+	connect(combo, &QComboBox::currentIndexChanged, this, &RgDialog::toggleDisplay);
+	connect(view, &QTreeWidget::itemSelectionChanged, this, &RgDialog::controlRemoveAct);
+	connect(removeAct, &Action::triggered, this, &RgDialog::removeItems);
 
 	italic = font();
 	italic.setItalic(true);
@@ -312,8 +312,8 @@ void RgDialog::createScanner(const QList<int>& indexes)
 	}
 
 	AlbumScanner* s = new AlbumScanner(fileMap);
-	connect(s, SIGNAL(progress(int)), this, SLOT(scannerProgress(int)));
-	connect(s, SIGNAL(done()), this, SLOT(scannerDone()));
+	connect(s, &AlbumScanner::progress, this, &RgDialog::scannerProgress);
+	connect(s, &AlbumScanner::done, this, &RgDialog::scannerDone);
 	scanners[s] = 0;
 	JobController::self()->add(s);
 }
@@ -342,8 +342,8 @@ void RgDialog::startReadingTags()
 	statusLabel->setVisible(true);
 	tagReader = new TagReader();
 	tagReader->setDetails(origSongs, base);
-	connect(tagReader, SIGNAL(progress(int, Tags::ReplayGain)), this, SLOT(songTags(int, Tags::ReplayGain)));
-	connect(tagReader, SIGNAL(done()), this, SLOT(tagReaderDone()));
+	connect(tagReader, &TagReader::progress, this, &RgDialog::songTags);
+	connect(tagReader, &TagReader::done, this, &RgDialog::tagReaderDone);
 	JobController::self()->add(tagReader);
 }
 
@@ -357,8 +357,8 @@ void RgDialog::stopReadingTags()
 	enableButton(User1, true);
 	progress->setVisible(false);
 	statusLabel->setVisible(false);
-	disconnect(tagReader, SIGNAL(progress(int, Tags::ReplayGain)), this, SLOT(songTags(int, Tags::ReplayGain)));
-	disconnect(tagReader, SIGNAL(done()), this, SLOT(tagReaderDone()));
+	disconnect(tagReader, &TagReader::progress, this, &RgDialog::songTags);
+	disconnect(tagReader, &TagReader::done, this, &RgDialog::tagReaderDone);
 	tagReader->requestAbort();
 	tagReader = 0;
 	autoScanTags = false;

@@ -49,20 +49,6 @@ QAction* MirrorMenu::addAction(const QIcon& icon, const QString& text)
 	return act;
 }
 
-QAction* MirrorMenu::addAction(const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut)
-{
-	QAction* act = QMenu::addAction(text, shortcut, receiver, member);
-	updateMenus();
-	return act;
-}
-
-QAction* MirrorMenu::addAction(const QIcon& icon, const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut)
-{
-	QAction* act = QMenu::addAction(icon, text, shortcut, receiver, member);
-	updateMenus();
-	return act;
-}
-
 void MirrorMenu::removeAction(QAction* act)
 {
 	QMenu::removeAction(act);
@@ -80,7 +66,7 @@ QMenu* MirrorMenu::duplicate(QWidget* p)
 	QMenu* menu = new QMenu(p);
 	menus.append(menu);
 	updateMenu(menu);
-	connect(menu, SIGNAL(destroyed(QObject*)), this, SLOT(menuDestroyed(QObject*)));
+	connect(menu, &QMenu::destroyed, this, &MirrorMenu::menuDestroyed);
 	return menu;
 }
 

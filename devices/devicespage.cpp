@@ -63,24 +63,24 @@ DevicesPage::DevicesPage(QWidget* p)
 	copyToLibraryButton->setDefaultAction(copyAction);
 	syncAction = new Action(Icon::fa(fa::fa_solid, fa::fa_right_left), tr("Synchronise"), this);
 	syncAction->setEnabled(false);
-	connect(syncAction, SIGNAL(triggered()), this, SLOT(sync()));
+	connect(syncAction, &Action::triggered, this, &DevicesPage::sync);
 #ifdef ENABLE_REMOTE_DEVICES
 	forgetDeviceAction = new Action(tr("Forget Device"), this);
-	connect(forgetDeviceAction, SIGNAL(triggered()), this, SLOT(forgetRemoteDevice()));
+	connect(forgetDeviceAction, &Action::triggered, this, &DevicesPage::forgetRemoteDevice);
 #endif
-	connect(DevicesModel::self()->connectAct(), SIGNAL(triggered()), this, SLOT(toggleDevice()));
-	connect(DevicesModel::self()->disconnectAct(), SIGNAL(triggered()), this, SLOT(toggleDevice()));
-	connect(DevicesModel::self(), SIGNAL(updated(QModelIndex)), this, SLOT(updated(QModelIndex)));
-	connect(view, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(itemDoubleClicked(const QModelIndex&)));
-	connect(view, SIGNAL(searchItems()), this, SLOT(searchItems()));
-	connect(view, SIGNAL(itemsSelected(bool)), SLOT(controlActions()));
-	connect(copyAction, SIGNAL(triggered()), this, SLOT(copyToLibrary()));
-	connect(DevicesModel::self()->configureAct(), SIGNAL(triggered()), this, SLOT(configureDevice()));
-	connect(DevicesModel::self()->refreshAct(), SIGNAL(triggered()), this, SLOT(refreshDevice()));
+	connect(DevicesModel::self()->connectAct(), &Action::triggered, this, &DevicesPage::toggleDevice);
+	connect(DevicesModel::self()->disconnectAct(), &Action::triggered, this, &DevicesPage::toggleDevice);
+	connect(DevicesModel::self(), &DevicesModel::updated, this, &DevicesPage::updated);
+	connect(view, &ItemView::doubleClicked, this, &DevicesPage::itemDoubleClicked);
+	connect(view, &ItemView::searchItems, this, &DevicesPage::searchItems);
+	connect(view, &ItemView::itemsSelected, this, &DevicesPage::controlActions);
+	connect(copyAction, &Action::triggered, this, &DevicesPage::copyToLibrary);
+	connect(DevicesModel::self()->configureAct(), &Action::triggered, this, &DevicesPage::configureDevice);
+	connect(DevicesModel::self()->refreshAct(), &Action::triggered, this, &DevicesPage::refreshDevice);
 #if defined CDDB_FOUND || defined MusicBrainz5_FOUND
-	connect(DevicesModel::self()->editAct(), SIGNAL(triggered()), this, SLOT(editDetails()));
-	connect(DevicesModel::self(), SIGNAL(matches(const QString&, const QList<CdAlbum>&)),
-	        SLOT(cdMatches(const QString&, const QList<CdAlbum>&)));
+	connect(DevicesModel::self()->editAct(), &Action::triggered, this, &DevicesPage::editDetails);
+	connect(DevicesModel::self(), &DevicesModel::matches,
+	        this, &DevicesPage::cdMatches);
 #endif
 	proxy.setSourceModel(DevicesModel::self());
 	view->setModel(&proxy);
@@ -97,7 +97,7 @@ DevicesPage::DevicesPage(QWidget* p)
 #ifdef ENABLE_REMOTE_DEVICES
 	menu->addSeparator();
 	Action* addRemote = new Action(tr("Add Device"), this);
-	connect(addRemote, SIGNAL(triggered()), this, SLOT(addRemoteDevice()));
+	connect(addRemote, &Action::triggered, this, &DevicesPage::addRemoteDevice);
 	menu->addAction(addRemote);
 	menu->addAction(forgetDeviceAction);
 #endif
@@ -488,8 +488,8 @@ void DevicesPage::addRemoteDevice()
 #ifdef ENABLE_REMOTE_DEVICES
 	RemoteDevicePropertiesDialog* dlg = new RemoteDevicePropertiesDialog(this);
 	dlg->show(DeviceOptions(QLatin1String("cover.jpg")), RemoteFsDevice::Details(), DevicePropertiesWidget::Prop_All - DevicePropertiesWidget::Prop_Folder, true);
-	connect(dlg, SIGNAL(updatedSettings(const DeviceOptions&, RemoteFsDevice::Details)),
-	        DevicesModel::self(), SLOT(addRemoteDevice(const DeviceOptions&, RemoteFsDevice::Details)));
+	connect(dlg, &RemoteDevicePropertiesDialog::updatedSettings,
+	        DevicesModel::self(), &DevicesModel::addRemoteDevice);
 #endif
 }
 

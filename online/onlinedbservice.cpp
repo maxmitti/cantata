@@ -39,7 +39,7 @@ OnlineXmlParser::OnlineXmlParser()
 	thread = new Thread(metaObject()->className());
 	moveToThread(thread);
 	thread->start();
-	connect(this, SIGNAL(startParsing(NetworkJob*)), this, SLOT(doParsing(NetworkJob*)));
+	connect(this, &OnlineXmlParser::startParsing, this, &OnlineXmlParser::doParsing);
 }
 
 OnlineXmlParser::~OnlineXmlParser()
@@ -87,7 +87,7 @@ void OnlineXmlParser::doParsing(NetworkJob* job)
 OnlineDbService::OnlineDbService(LibraryDb* d, QObject* p)
 	: SqlLibraryModel(d, p, T_Genre), lastPc(-1), job(nullptr)
 {
-	connect(Covers::self(), SIGNAL(cover(Song, QImage, QString)), this, SLOT(cover(Song, QImage, QString)));
+	connect(Covers::self(), &Covers::cover, this, &OnlineDbService::cover);
 }
 
 QVariant OnlineDbService::data(const QModelIndex& index, int role) const
@@ -135,8 +135,8 @@ void OnlineDbService::download(bool redownload)
 	}
 	if (redownload || !previouslyDownloaded()) {
 		job = NetworkAccessManager::self()->get(QUrl(listingUrl()));
-		connect(job, SIGNAL(downloadPercent(int)), this, SLOT(downloadPercent(int)));
-		connect(job, SIGNAL(finished()), this, SLOT(downloadFinished()));
+		connect(job, &NetworkJob::downloadPercent, this, &OnlineDbService::downloadPercent);
+		connect(job, &NetworkJob::finished, this, &OnlineDbService::downloadFinished);
 		lastPc = -1;
 		downloadPercent(0);
 	}
@@ -202,16 +202,16 @@ void OnlineDbService::downloadFinished()
 		updateStatus(tr("Parsing music list...."));
 		OnlineXmlParser* parser = createParser();
 		db->clear();
-		connect(parser, SIGNAL(startUpdate()), static_cast<OnlineDb*>(db), SLOT(startUpdate()));
-		connect(parser, SIGNAL(endUpdate()), static_cast<OnlineDb*>(db), SLOT(endUpdate()));
-		connect(parser, SIGNAL(abortUpdate()), static_cast<OnlineDb*>(db), SLOT(abortUpdate()));
-		connect(parser, SIGNAL(stats(int)), static_cast<OnlineDb*>(db), SLOT(insertStats(int)));
-		connect(parser, SIGNAL(coverUrl(QString, QString, QString)), static_cast<OnlineDb*>(db), SLOT(storeCoverUrl(QString, QString, QString)));
-		connect(parser, SIGNAL(songs(QList<Song>*)), static_cast<OnlineDb*>(db), SLOT(insertSongs(QList<Song>*)));
-		connect(parser, SIGNAL(complete()), job, SLOT(deleteLater()));
-		connect(parser, SIGNAL(complete()), this, SLOT(updateStats()));
-		connect(parser, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-		connect(parser, SIGNAL(complete()), parser, SLOT(deleteLater()));
+		connect(parser, &OnlineXmlParser::startUpdate, static_cast<OnlineDb*>(db), &OnlineDb::startUpdate);
+		connect(parser, &OnlineXmlParser::endUpdate, static_cast<OnlineDb*>(db), &OnlineDb::endUpdate);
+		connect(parser, &OnlineXmlParser::abortUpdate, static_cast<OnlineDb*>(db), &OnlineDb::abortUpdate);
+		connect(parser, &OnlineXmlParser::stats, static_cast<OnlineDb*>(db), &OnlineDb::insertStats);
+		connect(parser, &OnlineXmlParser::coverUrl, static_cast<OnlineDb*>(db), &OnlineDb::storeCoverUrl);
+		connect(parser, &OnlineXmlParser::songs, static_cast<OnlineDb*>(db), &OnlineDb::insertSongs);
+		connect(parser, &OnlineXmlParser::complete, job, &NetworkJob::deleteLater);
+		connect(parser, &OnlineXmlParser::complete, this, &OnlineDbService::updateStats);
+		connect(parser, &OnlineXmlParser::error, this, &OnlineDbService::error);
+		connect(parser, &OnlineXmlParser::complete, parser, &OnlineXmlParser::deleteLater);
 		parser->start(reply);
 	}
 	else {

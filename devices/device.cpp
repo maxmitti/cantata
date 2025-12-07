@@ -312,7 +312,7 @@ Device::Device(MusicLibraryModel* m, const QString& name, const QString& id)
 
 void Device::saveCache()
 {
-	QTimer::singleShot(0, this, SIGNAL(cacheSaved()));
+	QTimer::singleShot(0, this, &Device::cacheSaved);
 }
 
 void Device::applyUpdate()

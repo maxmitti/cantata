@@ -302,18 +302,18 @@ NowPlayingWidget::NowPlayingWidget(QWidget* p)
 	layout->addLayout(botLayout);
 	layout->addItem(new QSpacerItem(1, space / 4, QSizePolicy::Fixed, QSizePolicy::Fixed));
 	layout->addWidget(slider);
-	connect(slider, SIGNAL(sliderPressed()), this, SLOT(pressed()));
-	connect(slider, SIGNAL(sliderReleased()), this, SLOT(released()));
-	connect(slider, SIGNAL(positionSet()), this, SIGNAL(sliderReleased()));
-	connect(slider, SIGNAL(valueChanged(int)), this, SLOT(updateTimes()));
-	connect(this, SIGNAL(mpdPoll()), MPDConnection::self(), SLOT(getStatus()));
+	connect(slider, &PosSlider::sliderPressed, this, &NowPlayingWidget::pressed);
+	connect(slider, &PosSlider::sliderReleased, this, &NowPlayingWidget::released);
+	connect(slider, &PosSlider::positionSet, this, &NowPlayingWidget::sliderReleased);
+	connect(slider, &PosSlider::valueChanged, this, &NowPlayingWidget::updateTimes);
+	connect(this, &NowPlayingWidget::mpdPoll, MPDConnection::self(), &MPDConnection::getStatus);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	clearTimes();
 	update(Song());
-	connect(ratingWidget, SIGNAL(valueChanged(int)), SLOT(setRating(int)));
-	connect(this, SIGNAL(setRating(QString, quint8)), MPDConnection::self(), SLOT(setRating(QString, quint8)));
-	connect(PlayQueueModel::self(), SIGNAL(currentSongRating(QString, quint8)), this, SLOT(rating(QString, quint8)));
-	connect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(updateInfo()));
+	connect(ratingWidget, &RatingWidget::valueChanged, this, qOverload<int>(&NowPlayingWidget::setRating));
+	connect(this, qOverload<const QString&, quint8>(&NowPlayingWidget::setRating), MPDConnection::self(), qOverload<const QString&, quint8>(&MPDConnection::setRating));
+	connect(PlayQueueModel::self(), &PlayQueueModel::currentSongRating, this, &NowPlayingWidget::rating);
+	connect(MPDStatus::self(), &MPDStatus::updated, this, &NowPlayingWidget::updateInfo);
 
 	Action* copy = ActionCollection::get()->createAction("copy-current-info", tr("Copy To Clipboard"));
 	copy->setSettingsText(tr("Now Playing") + QLatin1String(" / ") + Utils::strippedText(copy->text()));
@@ -321,7 +321,7 @@ NowPlayingWidget::NowPlayingWidget(QWidget* p)
 	artist->setContextMenuPolicy(Qt::NoContextMenu);
 	track->addAction(copy);
 	track->setContextMenuPolicy(Qt::NoContextMenu);
-	connect(copy, SIGNAL(triggered()), SLOT(copyInfo()));
+	connect(copy, &Action::triggered, this, &NowPlayingWidget::copyInfo);
 }
 
 void NowPlayingWidget::update(const Song& song)
@@ -341,7 +341,7 @@ void NowPlayingWidget::startTimer()
 	if (!timer) {
 		timer = new QTimer(this);
 		timer->setInterval(1000);
-		connect(timer, SIGNAL(timeout()), this, SLOT(updatePos()));
+		connect(timer, &QTimer::timeout, this, &NowPlayingWidget::updatePos);
 	}
 	elapsedTimer.start();
 	lastVal = value();

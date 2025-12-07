@@ -162,7 +162,7 @@ ConfigDialog::ConfigDialog(QWidget* parent, const QString& name, const QSize& de
 	else {
 		buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply, Qt::Horizontal, mw);
 		lay->addWidget(buttonBox);
-		connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(macButtonPressed(QAbstractButton*)));
+		connect(buttonBox, &MpdSocket::clicked, this, &ConfigDialog::macButtonPressed);
 		buttonBox->setStyle(Dialog::buttonProxyStyle());
 		// Hide window buttons if not instany apply - dont want user just closing dialog
 		setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint);
@@ -214,7 +214,7 @@ void ConfigDialog::addPage(const QString& id, QWidget* widget, const QString& na
 	stack->addWidget(widget);
 	group->addButton(newPage.item);
 	pages.insert(id, newPage);
-	connect(newPage.item, SIGNAL(toggled(bool)), this, SLOT(activatePage()));
+	connect(newPage.item, &MpdSocket::toggled, this, &ConfigDialog::activatePage);
 	int sz = 0;
 	QMap<QString, Page>::const_iterator it = pages.begin();
 	QMap<QString, Page>::const_iterator end = pages.end();
@@ -413,7 +413,7 @@ static QWidget* firstFocusableWidget(QWidget* w)
 void ConfigDialog::showEvent(QShowEvent* e)
 {
 	if (!shown) {
-		QTimer::singleShot(0, this, SLOT(setFocus()));
+		QTimer::singleShot(0, this, &ConfigDialog::setFocus);
 		shown = true;
 		ensurePolished();
 

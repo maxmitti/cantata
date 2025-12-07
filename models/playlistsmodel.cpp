@@ -72,22 +72,22 @@ PlaylistsModel::PlaylistsModel(QObject* parent)
 	: ActionModel(parent), multiCol(false), itemMenu(nullptr), dropAdjust(0)
 {
 	icn = Icons::self()->playlistListIcon;
-	connect(MPDConnection::self(), SIGNAL(stateChanged(bool)), SLOT(mpdConnectionStateChanged(bool)));
-	connect(MPDConnection::self(), SIGNAL(playlistsRetrieved(const QList<Playlist>&)), this, SLOT(setPlaylists(const QList<Playlist>&)));
-	connect(MPDConnection::self(), SIGNAL(playlistInfoRetrieved(const QString&, const QList<Song>&)), this, SLOT(playlistInfoRetrieved(const QString&, const QList<Song>&)));
-	connect(MPDConnection::self(), SIGNAL(removedFromPlaylist(const QString&, const QList<quint32>&)),
-	        this, SLOT(removedFromPlaylist(const QString&, const QList<quint32>&)));
-	connect(MPDConnection::self(), SIGNAL(playlistRenamed(const QString&, const QString&)),
-	        this, SLOT(playlistRenamed(const QString&, const QString&)));
-	connect(MPDConnection::self(), SIGNAL(movedInPlaylist(const QString&, const QList<quint32>&, quint32)),
-	        this, SLOT(movedInPlaylist(const QString&, const QList<quint32>&, quint32)));
-	connect(this, SIGNAL(listPlaylists()), MPDConnection::self(), SLOT(listPlaylists()));
-	connect(this, SIGNAL(playlistInfo(const QString&)), MPDConnection::self(), SLOT(playlistInfo(const QString&)));
-	connect(this, SIGNAL(addToPlaylist(const QString&, const QStringList, quint32, quint32)), MPDConnection::self(), SLOT(addToPlaylist(const QString&, const QStringList, quint32, quint32)));
-	connect(this, SIGNAL(moveInPlaylist(const QString&, const QList<quint32>&, quint32, quint32)), MPDConnection::self(), SLOT(moveInPlaylist(const QString&, const QList<quint32>&, quint32, quint32)));
-	connect(Covers::self(), SIGNAL(loaded(Song, int)), this, SLOT(coverLoaded(Song, int)));
+	connect(MPDConnection::self(), &MPDConnection::stateChanged, this, &PlaylistsModel::mpdConnectionStateChanged);
+	connect(MPDConnection::self(), &MPDConnection::playlistsRetrieved, this, &PlaylistsModel::setPlaylists);
+	connect(MPDConnection::self(), &MPDConnection::playlistInfoRetrieved, this, &PlaylistsModel::playlistInfoRetrieved);
+	connect(MPDConnection::self(), &MPDConnection::removedFromPlaylist,
+	        this, &PlaylistsModel::removedFromPlaylist);
+	connect(MPDConnection::self(), &MPDConnection::playlistRenamed,
+	        this, &PlaylistsModel::playlistRenamed);
+	connect(MPDConnection::self(), &MPDConnection::movedInPlaylist,
+	        this, &PlaylistsModel::movedInPlaylist);
+	connect(this, &PlaylistsModel::listPlaylists, MPDConnection::self(), &MPDConnection::listPlaylists);
+	connect(this, &PlaylistsModel::playlistInfo, MPDConnection::self(), &MPDConnection::playlistInfo);
+	connect(this, &PlaylistsModel::addToPlaylist, MPDConnection::self(), qOverload<const QString&, const QStringList&, quint32, quint32>(&MPDConnection::addToPlaylist));
+	connect(this, &PlaylistsModel::moveInPlaylist, MPDConnection::self(), &MPDConnection::moveInPlaylist);
+	connect(Covers::self(), qOverload<const Song&, int>(&Covers::loaded), this, &PlaylistsModel::coverLoaded);
 	newAction = new QAction(Icon::fa(fa::fa_solid, fa::fa_asterisk), tr("New Playlist..."), this);
-	connect(newAction, SIGNAL(triggered()), this, SIGNAL(addToNew()));
+	connect(newAction, &QAction::triggered, this, &PlaylistsModel::addToNew);
 	Action::initIcon(newAction);
 	alignments[COL_TITLE] = alignments[COL_ARTIST] = alignments[COL_ALBUM] = alignments[COL_GENRE] = alignments[COL_COMPOSER] =
 			alignments[COL_PERFORMER] = alignments[COL_FILENAME] = alignments[COL_PATH] = alignments[COL_GROUPING] = int(Qt::AlignVCenter | Qt::AlignLeft);
@@ -972,7 +972,7 @@ void PlaylistsModel::updateItemMenu(bool create)
 	}
 	std::sort(names.begin(), names.end(), PlaylistsProxyModel::compareNames);
 	for (const QString& n : names) {
-		itemMenu->addAction(n, this, SLOT(emitAddToExisting()));
+		itemMenu->addAction(n, this, &PlaylistsModel::emitAddToExisting);
 	}
 }
 

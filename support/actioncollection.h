@@ -28,8 +28,8 @@
 #include <QObject>
 #include <QString>
 
-class Action;
-class QAction;
+#include "action.h"
+
 class QWidget;
 class QIcon;
 
@@ -75,17 +75,26 @@ public:
 
 	QAction* addAction(const QString& name, QAction* action);
 	Action* addAction(const QString& name, Action* action);
-	Action* addAction(const QString& name, const QObject* receiver = nullptr, const char* member = nullptr);
+
+	template <typename Receiver = QObject>
+	Action* addAction(const QString& name, const Receiver* receiver = nullptr, void (Receiver::*slot)() = nullptr)
+	{
+		Action* a = new Action(this);
+		if (receiver && slot)
+			connect(a, &Action::triggered, receiver, slot);
+		return addAction(name, a);
+	}
+
 	void removeAction(QAction* action);
 	QAction* takeAction(QAction* action);
 
 	/// Create new action under the given name, add it to the collection and connect its triggered(bool) signal to the specified receiver.
-	template<class ActionType>
-	ActionType* add(const QString& name, const QObject* receiver = nullptr, const char* member = nullptr)
+	template<class ActionType, typename Receiver = QObject>
+	ActionType* add(const QString& name, const Receiver* receiver = nullptr, void (Receiver::*slot)() = nullptr)
 	{
 		ActionType* a = new ActionType(this);
-		if (receiver && member)
-			connect(a, SIGNAL(triggered(bool)), receiver, member);
+		if (receiver && slot)
+			connect(a, &ActionType::triggered, receiver, slot);
 		addAction(name, a);
 		return a;
 	}

@@ -60,7 +60,7 @@ StreamDialog::StreamDialog(QWidget* parent, bool addToPlayQueue)
 	if (addToPlayQueue) {
 		saveCheckbox->setChecked(false);
 		layout->setWidget(row++, QFormLayout::FieldRole, saveCheckbox);
-		connect(saveCheckbox, SIGNAL(toggled(bool)), SLOT(changed()));
+		connect(saveCheckbox, &QCheckBox::toggled, this, &StreamDialog::changed);
 	}
 	layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
@@ -69,8 +69,8 @@ StreamDialog::StreamDialog(QWidget* parent, bool addToPlayQueue)
 	setMainWidget(wid);
 	setButtons(Ok | Cancel);
 	enableButton(Ok, false);
-	connect(nameEntry, SIGNAL(textChanged(const QString&)), SLOT(changed()));
-	connect(urlEntry, SIGNAL(textChanged(const QString&)), SLOT(changed()));
+	connect(nameEntry, &LineEdit::textChanged, this, &StreamDialog::changed);
+	connect(urlEntry, &LineEdit::textChanged, this, &StreamDialog::changed);
 	urlEntry->setFocus();
 	resize(400, 100);
 }

@@ -68,12 +68,12 @@ FileJob::FileJob()
 	FileThread::self()->addJob(this);
 	// Cant call deleteLater here, as in the device's xxResult() slots "sender()" returns
 	// null. Therefore, xxResult() slots need to call finished()
-	//connect(this, SIGNAL(result(int)), SLOT(deleteLater()));
+	//connect(this, &FileJob::result, this, &FileJob::deleteLater);
 }
 
 void FileJob::start()
 {
-	QTimer::singleShot(0, this, SLOT(run()));
+	QTimer::singleShot(0, this, &FileJob::run);
 }
 
 void FileJob::setPercent(int pc)

@@ -50,7 +50,7 @@ ActionCollection* ActionCollection::get()
 
 Action* ActionCollection::createAction(const QString& name, const QString& text, const char* icon, const QString& whatsThis)
 {
-	Action* act = static_cast<Action*>(addAction(name));
+	Action* act = addAction(name);
 	act->setText(text);
 	if (nullptr != icon) {
 		act->setIcon(Icon::get(icon));
@@ -121,14 +121,6 @@ Action* ActionCollection::addAction(const QString& name, Action* action)
 	return action;
 }
 
-Action* ActionCollection::addAction(const QString& name, const QObject* receiver, const char* member)
-{
-	Action* a = new Action(this);
-	if (receiver && member)
-		connect(a, SIGNAL(triggered(bool)), receiver, member);
-	return addAction(name, a);
-}
-
 QAction* ActionCollection::addAction(const QString& name, QAction* action)
 {
 	if (!action)
@@ -166,11 +158,11 @@ QAction* ActionCollection::addAction(const QString& name, QAction* action)
 		widget->addAction(action);
 	}
 
-	connect(action, SIGNAL(destroyed(QObject*)), SLOT(actionDestroyed(QObject*)));
+	connect(action, &QAction::destroyed, this, &ActionCollection::actionDestroyed);
 	if (_connectHovered)
-		connect(action, SIGNAL(hovered()), SLOT(slotActionHovered()));
+		connect(action, &QAction::hovered, this, &ActionCollection::slotActionHovered);
 	if (_connectTriggered)
-		connect(action, SIGNAL(triggered(bool)), SLOT(slotActionTriggered()));
+		connect(action, &QAction::triggered, this, &ActionCollection::slotActionTriggered);
 
 	emit inserted(action);
 	return action;
@@ -263,18 +255,18 @@ void ActionCollection::connectNotify(const QMetaMethod& signal)
 	if (_connectHovered && _connectTriggered)
 		return;
 
-	if (QMetaObject::normalizedSignature(SIGNAL(actionHovered(QAction*))) == signal.methodSignature()) {
+	if (QMetaMethod::fromSignal(&ActionCollection::actionHovered) == signal) {
 		if (!_connectHovered) {
 			_connectHovered = true;
 			for (QAction* action : actions())
-				connect(action, SIGNAL(hovered()), SLOT(slotActionHovered()));
+				connect(action, &QAction::hovered, this, &ActionCollection::slotActionHovered);
 		}
 	}
-	else if (QMetaObject::normalizedSignature(SIGNAL(actionTriggered(QAction*))) == signal.methodSignature()) {
+	else if (QMetaMethod::fromSignal(&ActionCollection::actionTriggered) == signal) {
 		if (!_connectTriggered) {
 			_connectTriggered = true;
 			for (QAction* action : actions())
-				connect(action, SIGNAL(triggered(bool)), SLOT(slotActionTriggered()));
+				connect(action, &QAction::triggered, this, &ActionCollection::slotActionTriggered);
 		}
 	}
 
@@ -294,7 +286,7 @@ void ActionCollection::addAssociatedWidget(QWidget* widget)
 	if (!_associatedWidgets.contains(widget)) {
 		widget->addActions(actions());
 		_associatedWidgets.append(widget);
-		connect(widget, SIGNAL(destroyed(QObject*)), SLOT(associatedWidgetDestroyed(QObject*)));
+		connect(widget, &QWidget::destroyed, this, &ActionCollection::associatedWidgetDestroyed);
 	}
 }
 
@@ -303,7 +295,7 @@ void ActionCollection::removeAssociatedWidget(QWidget* widget)
 	for (QAction* action : actions())
 		widget->removeAction(action);
 	_associatedWidgets.removeAll(widget);
-	disconnect(widget, SIGNAL(destroyed(QObject*)), this, SLOT(associatedWidgetDestroyed(QObject*)));
+	disconnect(widget, &QWidget::destroyed, this, &ActionCollection::associatedWidgetDestroyed);
 }
 
 QList<QWidget*> ActionCollection::associatedWidgets() const

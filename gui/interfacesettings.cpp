@@ -144,9 +144,9 @@ InterfaceSettings::InterfaceSettings(QWidget* p)
 #endif
 	addView(tr("Search (via MPD)"), QLatin1String("SearchPage"));
 	addView(tr("Info - Current song information (artist, album, and lyrics)"), QLatin1String("ContextPage"));
-	connect(playQueueView, SIGNAL(currentIndexChanged(int)), SLOT(playQueueViewChanged()));
-	connect(forceSingleClick, SIGNAL(toggled(bool)), SLOT(forceSingleClickChanged()));
-	connect(views, SIGNAL(itemChanged(QListWidgetItem*)), SLOT(viewItemChanged(QListWidgetItem*)));
+	connect(playQueueView, &QComboBox::currentIndexChanged, this, &InterfaceSettings::playQueueViewChanged);
+	connect(forceSingleClick, &QCheckBox::toggled, this, &InterfaceSettings::forceSingleClickChanged);
+	connect(views, &QListWidget::itemChanged, this, &InterfaceSettings::viewItemChanged);
 
 	sbStyle->addItem(tr("Large"), FancyTabWidget::Large);
 	sbStyle->addItem(tr("Small"), FancyTabWidget::Small);
@@ -154,7 +154,7 @@ InterfaceSettings::InterfaceSettings(QWidget* p)
 	sbPosition->addItem(Qt::LeftToRight == layoutDirection() ? tr("Left") : tr("Right"), FancyTabWidget::Side);
 	sbPosition->addItem(tr("Top"), FancyTabWidget::Top);
 	sbPosition->addItem(tr("Bottom"), FancyTabWidget::Bot);
-	connect(sbAutoHide, SIGNAL(toggled(bool)), SLOT(sbAutoHideChanged()));
+	connect(sbAutoHide, &QCheckBox::toggled, this, &InterfaceSettings::sbAutoHideChanged);
 	views->setItemDelegate(new BasicItemDelegate(views));
 	playQueueBackground_none->setProperty(constValueProperty, PlayQueueView::BI_None);
 	playQueueBackground_cover->setProperty(constValueProperty, PlayQueueView::BI_Cover);
@@ -164,16 +164,16 @@ InterfaceSettings::InterfaceSettings(QWidget* p)
 	int labelWidth = qMax(fontMetrics().horizontalAdvance(QLatin1String("100%")), fontMetrics().horizontalAdvance(tr("10px", "pixels")));
 	playQueueBackgroundOpacityLabel->setFixedWidth(labelWidth);
 	playQueueBackgroundBlurLabel->setFixedWidth(labelWidth);
-	connect(playQueueBackgroundOpacity, SIGNAL(valueChanged(int)), SLOT(setPlayQueueBackgroundOpacityLabel()));
-	connect(playQueueBackgroundBlur, SIGNAL(valueChanged(int)), SLOT(setPlayQueueBackgroundBlurLabel()));
-	connect(playQueueBackground_none, SIGNAL(toggled(bool)), SLOT(enablePlayQueueBackgroundOptions()));
-	connect(playQueueBackground_cover, SIGNAL(toggled(bool)), SLOT(enablePlayQueueBackgroundOptions()));
-	connect(playQueueBackground_custom, SIGNAL(toggled(bool)), SLOT(enablePlayQueueBackgroundOptions()));
-	connect(storeCoversInMpdDir, SIGNAL(toggled(bool)), this, SLOT(storeCoversInMpdDirToggled()));
+	connect(playQueueBackgroundOpacity, &QSlider::valueChanged, this, &InterfaceSettings::setPlayQueueBackgroundOpacityLabel);
+	connect(playQueueBackgroundBlur, &QSlider::valueChanged, this, &InterfaceSettings::setPlayQueueBackgroundBlurLabel);
+	connect(playQueueBackground_none, &QRadioButton::toggled, this, &InterfaceSettings::enablePlayQueueBackgroundOptions);
+	connect(playQueueBackground_cover, &QRadioButton::toggled, this, &InterfaceSettings::enablePlayQueueBackgroundOptions);
+	connect(playQueueBackground_custom, &QRadioButton::toggled, this, &InterfaceSettings::enablePlayQueueBackgroundOptions);
+	connect(storeCoversInMpdDir, &QCheckBox::toggled, this, &InterfaceSettings::storeCoversInMpdDirToggled);
 	if (enableTrayItem) {
-		connect(systemTrayCheckBox, SIGNAL(toggled(bool)), minimiseOnClose, SLOT(setEnabled(bool)));
-		connect(systemTrayCheckBox, SIGNAL(toggled(bool)), SLOT(enableStartupState()));
-		connect(minimiseOnClose, SIGNAL(toggled(bool)), SLOT(enableStartupState()));
+		connect(systemTrayCheckBox, &QCheckBox::toggled, minimiseOnClose, &QCheckBox::setEnabled);
+		connect(systemTrayCheckBox, &QCheckBox::toggled, this, &InterfaceSettings::enableStartupState);
+		connect(minimiseOnClose, &QCheckBox::toggled, this, &InterfaceSettings::enableStartupState);
 	}
 	else {
 		REMOVE(systemTrayCheckBox)
@@ -189,8 +189,8 @@ InterfaceSettings::InterfaceSettings(QWidget* p)
 	}
 #if defined Q_OS_WIN || defined Q_OS_MAC || !defined QT_QTDBUS_FOUND
 	if (systemTrayPopup && systemTrayCheckBox) {
-		connect(systemTrayCheckBox, SIGNAL(toggled(bool)), SLOT(systemTrayCheckBoxToggled()));
-		connect(systemTrayPopup, SIGNAL(toggled(bool)), SLOT(systemTrayPopupToggled()));
+		connect(systemTrayCheckBox, &QCheckBox::toggled, this, &InterfaceSettings::systemTrayCheckBoxToggled);
+		connect(systemTrayPopup, &QCheckBox::toggled, this, &InterfaceSettings::systemTrayPopupToggled);
 	}
 #endif
 	coverFilenameLabel->setToolTip(coverFilename->toolTip());
@@ -441,7 +441,7 @@ void InterfaceSettings::showEvent(QShowEvent* e)
 			REMOVE(langNoteLabel)
 		}
 		else {
-			connect(lang, SIGNAL(currentIndexChanged(int)), SLOT(langChanged()));
+			connect(lang, &QComboBox::currentIndexChanged, this, &InterfaceSettings::langChanged);
 		}
 
 		styleOption->addItem(tr("System default"));
@@ -467,7 +467,7 @@ void InterfaceSettings::showEvent(QShowEvent* e)
 					}
 				}
 			}
-			connect(styleOption, SIGNAL(currentIndexChanged(int)), SLOT(styleChanged()));
+			connect(styleOption, &QComboBox::currentIndexChanged, this, &InterfaceSettings::styleChanged);
 		}
 	}
 	QWidget::showEvent(e);

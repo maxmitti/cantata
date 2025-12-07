@@ -73,7 +73,7 @@ ActionLabel::ActionLabel(QWidget* parent)
 
 	setPixmap(*theIcons[0]);
 	timer = new QTimer(this);
-	connect(timer, SIGNAL(timeout()), SLOT(rotateIcon()));
+	connect(timer, &QTimer::timeout, this, &ActionLabel::rotateIcon);
 }
 
 ActionLabel::~ActionLabel()

@@ -34,8 +34,24 @@ public:
 	void addAction(QAction* act);
 	QAction* addAction(const QString& text);
 	QAction* addAction(const QIcon& icon, const QString& text);
-	QAction* addAction(const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
-	QAction* addAction(const QIcon& icon, const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
+
+	template <typename Receiver>
+	QAction* addAction(const QString& text, const Receiver* receiver, void (Receiver::*slot)(), const QKeySequence& shortcut = 0)
+	{
+		QAction* act = QMenu::addAction(text, shortcut, receiver, slot);
+		updateMenus();
+		return act;
+	}
+
+	template <typename Receiver>
+	QAction* addAction(const QIcon& icon, const QString& text, const Receiver* receiver, void (Receiver::*slot)(), const QKeySequence& shortcut = 0)
+
+	{
+		QAction* act = QMenu::addAction(icon, text, shortcut, receiver, slot);
+		updateMenus();
+		return act;
+	}
+
 	void removeAction(QAction* act);
 	void clear();
 	QMenu* duplicate(QWidget* p);

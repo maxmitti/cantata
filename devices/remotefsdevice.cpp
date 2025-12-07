@@ -294,7 +294,7 @@ void RemoteFsDevice::mount()
 			env.insert("SSH_ASKPASS", askPass);
 			proc->setProcessEnvironment(env);
 		}
-		connect(proc, SIGNAL(finished(int)), SLOT(procFinished(int)));
+		connect(proc, &QProcess::finished, this, &RemoteFsDevice::procFinished);
 		proc->start(cmd, args, QIODevice::ReadOnly);
 	}
 }
@@ -332,7 +332,7 @@ void RemoteFsDevice::unmount()
 		setStatusMessage(tr("Disconnecting..."));
 		proc = new QProcess(this);
 		proc->setProperty("unmount", true);
-		connect(proc, SIGNAL(finished(int)), SLOT(procFinished(int)));
+		connect(proc, &QProcess::finished, this, &RemoteFsDevice::procFinished);
 		proc->start(cmd, args, QIODevice::ReadOnly);
 	}
 }
@@ -509,10 +509,10 @@ void RemoteFsDevice::configure(QWidget* parent)
 	}
 
 	RemoteDevicePropertiesDialog* dlg = new RemoteDevicePropertiesDialog(parent);
-	connect(dlg, SIGNAL(updatedSettings(const DeviceOptions&, const RemoteFsDevice::Details&)),
-	        SLOT(saveProperties(const DeviceOptions&, const RemoteFsDevice::Details&)));
+	connect(dlg, &RemoteDevicePropertiesDialog::updatedSettings,
+	        this, qOverload<const DeviceOptions&, const RemoteFsDevice::Details&>(&RemoteFsDevice::saveProperties));
 	if (!configured) {
-		connect(dlg, SIGNAL(cancelled()), SLOT(saveProperties()));
+		connect(dlg, &RemoteDevicePropertiesDialog::cancelled, this, qOverload<>(&RemoteFsDevice::saveProperties));
 	}
 	dlg->show(opts, details,
 	          DevicePropertiesWidget::Prop_All - (DevicePropertiesWidget::Prop_Name + DevicePropertiesWidget::Prop_Folder + DevicePropertiesWidget::Prop_AutoScan),

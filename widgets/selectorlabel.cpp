@@ -49,7 +49,7 @@ static QString addMarkup(const QString& s, bool arrow, bool bold)
 
 void SelectorLabel::addItem(const QString& text, const QString& data, const QString& tt)
 {
-	QAction* act = menu->addAction(text, this, SLOT(itemSelected()));
+	QAction* act = menu->addAction(text, this, &SelectorLabel::itemSelected);
 	act->setData(data);
 	if (!tt.isEmpty()) {
 		act->setToolTip(tt);

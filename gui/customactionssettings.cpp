@@ -116,10 +116,10 @@ CustomActionsSettings::CustomActionsSettings(QWidget* parent)
 	tree->header()->setStretchLastSection(true);
 	tree->setAlternatingRowColors(false);
 	tree->setItemDelegate(new BasicItemDelegate(this));
-	connect(tree, SIGNAL(itemSelectionChanged()), this, SLOT(controlButtons()));
-	connect(add, SIGNAL(clicked()), SLOT(addCommand()));
-	connect(edit, SIGNAL(clicked()), SLOT(editCommand()));
-	connect(del, SIGNAL(clicked()), SLOT(delCommand()));
+	connect(tree, &QTreeWidget::itemSelectionChanged, this, &CustomActionsSettings::controlButtons);
+	connect(add, &QPushButton::clicked, this, &CustomActionsSettings::addCommand);
+	connect(edit, &QPushButton::clicked, this, &CustomActionsSettings::editCommand);
+	connect(del, &QPushButton::clicked, this, &CustomActionsSettings::delCommand);
 }
 
 CustomActionsSettings::~CustomActionsSettings()

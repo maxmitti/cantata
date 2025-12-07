@@ -118,6 +118,7 @@ private Q_SLOTS:
 	void authenticate();
 	void authResp();
 	void scrobbleFinished();
+	void mpdStateUpdatedSameSong();
 	void mpdStateUpdated(bool songChanged = false);
 	void mpdStatusUpdated(const MPDStatusValues& vals);
 	void clientMessageFailed(const QString& client, const QString& msg);

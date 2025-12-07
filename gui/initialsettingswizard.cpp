@@ -45,13 +45,13 @@ InitialSettingsWizard::InitialSettingsWizard(QWidget* p)
 	: QWizard(p)
 {
 	setupUi(this);
-	connect(this, SIGNAL(currentIdChanged(int)), SLOT(pageChanged(int)));
-	connect(this, SIGNAL(setDetails(MPDConnectionDetails)), MPDConnection::self(), SLOT(setDetails(MPDConnectionDetails)));
-	connect(MPDConnection::self(), SIGNAL(stateChanged(bool)), SLOT(mpdConnectionStateChanged(bool)));
-	connect(MPDConnection::self(), SIGNAL(error(QString, bool)), SLOT(showError(QString)));
-	connect(MpdLibraryModel::self(), SIGNAL(error(QString)), SLOT(dbError(QString)));
-	connect(connectButton, SIGNAL(clicked(bool)), SLOT(connectToMpd()));
-	connect(basicDir, SIGNAL(textChanged(QString)), SLOT(controlNextButton()));
+	connect(this, &InitialSettingsWizard::currentIdChanged, this, &InitialSettingsWizard::pageChanged);
+	connect(this, &InitialSettingsWizard::setDetails, MPDConnection::self(), &MPDConnection::setDetails);
+	connect(MPDConnection::self(), &MPDConnection::stateChanged, this, &InitialSettingsWizard::mpdConnectionStateChanged);
+	connect(MPDConnection::self(), &MPDConnection::error, this, &InitialSettingsWizard::showError);
+	connect(MpdLibraryModel::self(), &MpdLibraryModel::error, this, &InitialSettingsWizard::dbError);
+	connect(connectButton, &QPushButton::clicked, this, &InitialSettingsWizard::connectToMpd);
+	connect(basicDir, &PathRequester::textChanged, this, &InitialSettingsWizard::controlNextButton);
 	MPDConnection::self()->start();
 	statusLabel->setText(tr("Not Connected"));
 
@@ -318,7 +318,7 @@ void InitialSettingsWizard::reject()
 	// Clear version number - so that wizard is shown next time Cantata is started.
 	Settings::self()->clearVersion();
 	ThreadCleaner::self()->stopAll();
-	QTimer::singleShot(0, qApp, SLOT(quit()));
+	QTimer::singleShot(0, qApp, &QGuiApplication::quit);
 	QDialog::reject();
 }
 

@@ -119,8 +119,8 @@ AudioCdDevice::AudioCdDevice(MusicLibraryModel* m, Solid::Device& dev)
 		detailsString = tr("Reading disc");
 		setStatusMessage(detailsString);
 		lookupInProcess = true;
-		connect(Covers::self(), SIGNAL(cover(const Song&, const QImage&, const QString&)),
-		        this, SLOT(setCover(const Song&, const QImage&, const QString&)));
+		connect(Covers::self(), &Covers::cover,
+		        this, qOverload<const Song&, const QImage&, const QString&>(&AudioCdDevice::setCover));
 		emit lookup(Settings::self()->cdAuto());
 	}
 }
@@ -188,10 +188,10 @@ void AudioCdDevice::connectService(bool useCddb)
 #endif
 	) {
 		cddb = new CddbInterface(device);
-		connect(cddb, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-		connect(cddb, SIGNAL(initialDetails(CdAlbum)), this, SLOT(setDetails(CdAlbum)));
-		connect(cddb, SIGNAL(matches(const QList<CdAlbum>&)), SLOT(cdMatches(const QList<CdAlbum>&)));
-		connect(this, SIGNAL(lookup(bool)), cddb, SLOT(lookup(bool)));
+		connect(cddb, &CddbInterface::error, this, &AudioCdDevice::error);
+		connect(cddb, &CddbInterface::initialDetails, this, &AudioCdDevice::setDetails);
+		connect(cddb, &CddbInterface::matches, this, &AudioCdDevice::cdMatches);
+		connect(this, &AudioCdDevice::lookup, cddb, &CddbInterface::lookup);
 	}
 #endif
 
@@ -202,10 +202,10 @@ void AudioCdDevice::connectService(bool useCddb)
 #endif
 	) {
 		mb = new MusicBrainz(device);
-		connect(mb, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-		connect(mb, SIGNAL(initialDetails(CdAlbum)), this, SLOT(setDetails(CdAlbum)));
-		connect(mb, SIGNAL(matches(const QList<CdAlbum>&)), SLOT(cdMatches(const QList<CdAlbum>&)));
-		connect(this, SIGNAL(lookup(bool)), mb, SLOT(lookup(bool)));
+		connect(mb, &MusicBrainz::error, this, &AudioCdDevice::error);
+		connect(mb, &MusicBrainz::initialDetails, this, &AudioCdDevice::setDetails);
+		connect(mb, &MusicBrainz::matches, this, &AudioCdDevice::cdMatches);
+		connect(this, &AudioCdDevice::lookup, mb, &MusicBrainz::lookup);
 	}
 #endif
 }
@@ -274,8 +274,8 @@ void AudioCdDevice::copySongTo(const Song& s, const QString& musicPath, bool ove
 
 	currentSong = s;
 	ExtractJob* job = new ExtractJob(encoder, mpdOpts.transcoderValue, source, currentDestFile, currentSong, copyCover ? coverImage.fileName : QString());
-	connect(job, SIGNAL(result(int)), SLOT(copySongToResult(int)));
-	connect(job, SIGNAL(percent(int)), SLOT(percent(int)));
+	connect(job, &ExtractJob::result, this, &AudioCdDevice::copySongToResult);
+	connect(job, &ExtractJob::percent, this, &AudioCdDevice::percent);
 	job->start();
 }
 

@@ -63,12 +63,12 @@ TagHelper::TagHelper(const QString& sockName, int parent)
 {
 	socket = new QLocalSocket(this);
 	socket->connectToServer(sockName);
-	connect(socket, SIGNAL(readyRead()), SLOT(dataReady()));
-	connect(socket, SIGNAL(disconnected()), qApp, SLOT(quit()));
+	connect(socket, &QLocalSocket::readyRead, this, &TagHelper::dataReady);
+	connect(socket, &QLocalSocket::disconnected, qApp, &QCoreApplication::quit);
 	QTimer* timer = new QTimer(this);
 	timer->setSingleShot(false);
 	timer->start(5000);
-	connect(timer, SIGNAL(timeout()), SLOT(checkParent()));
+	connect(timer, &QTimer::timeout, this, &TagHelper::checkParent);
 	socketName = sockName;
 	atexit(deleteSocket);
 }

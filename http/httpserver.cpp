@@ -63,10 +63,10 @@ GLOBAL_STATIC(HttpServer, instance)
 HttpServer::HttpServer()
 	: QObject(nullptr), thread(nullptr), socket(nullptr), closeTimer(nullptr)
 {
-	connect(MPDConnection::self(), SIGNAL(cantataStreams(QList<Song>, bool)), this, SLOT(cantataStreams(QList<Song>, bool)));
-	connect(MPDConnection::self(), SIGNAL(cantataStreams(QStringList)), this, SLOT(cantataStreams(QStringList)));
-	connect(MPDConnection::self(), SIGNAL(removedIds(QSet<qint32>)), this, SLOT(removedIds(QSet<qint32>)));
-	connect(MPDConnection::self(), SIGNAL(ifaceIp(QString)), this, SLOT(ifaceIp(QString)));
+	connect(MPDConnection::self(), qOverload<const QStringList&>(&MPDConnection::cantataStreams), this, qOverload<const QStringList&>(&HttpServer::cantataStreams));
+	connect(MPDConnection::self(), qOverload<const QList<Song>&, bool>(&MPDConnection::cantataStreams), this, qOverload<const QList<Song>&, bool>(&HttpServer::cantataStreams));
+	connect(MPDConnection::self(), &MPDConnection::removedIds, this, &HttpServer::removedIds);
+	connect(MPDConnection::self(), &MPDConnection::ifaceIp, this, &HttpServer::ifaceIp);
 }
 
 bool HttpServer::isAlive() const
@@ -95,7 +95,7 @@ bool HttpServer::start()
 	}
 	socket = new HttpSocket(Settings::self()->httpInterface(), prevPort);
 	socket->mpdAddress(MPDConnection::self()->ipAddress());
-	connect(this, SIGNAL(terminateSocket()), socket, SLOT(terminate()), Qt::QueuedConnection);
+	connect(this, &HttpServer::terminateSocket, socket, &HttpSocket::terminate, Qt::QueuedConnection);
 	if (socket->serverPort() != prevPort) {
 		Settings::self()->saveHttpAllocatedPort(socket->serverPort());
 	}
@@ -311,7 +311,7 @@ void HttpServer::startCloseTimer()
 	if (!closeTimer) {
 		closeTimer = new QTimer(this);
 		closeTimer->setSingleShot(true);
-		connect(closeTimer, SIGNAL(timeout()), this, SLOT(stop()));
+		connect(closeTimer, &QTimer::timeout, this, &HttpServer::stop);
 	}
 	DBUG;
 	closeTimer->start(1000);

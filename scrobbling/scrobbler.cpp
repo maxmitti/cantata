@@ -181,15 +181,15 @@ Scrobbler::Scrobbler()
 	retryTimer = new QTimer(this);
 	retryTimer->setSingleShot(true);
 	retryTimer->setInterval(10000);
-	connect(scrobbleTimer, SIGNAL(timeout()), this, SLOT(scrobbleCurrent()));
-	connect(retryTimer, SIGNAL(timeout()), this, SLOT(scrobbleQueued()));
-	connect(nowPlayingTimer, SIGNAL(timeout()), this, SLOT(scrobbleNowPlaying()));
-	connect(hardFailTimer, SIGNAL(timeout()), this, SLOT(authenticate()));
+	connect(scrobbleTimer, &QTimer::timeout, this, &Scrobbler::scrobbleCurrent);
+	connect(retryTimer, &QTimer::timeout, this, &Scrobbler::scrobbleQueued);
+	connect(nowPlayingTimer, &QTimer::timeout, this, &Scrobbler::scrobbleNowPlaying);
+	connect(hardFailTimer, &QTimer::timeout, this, &Scrobbler::authenticate);
 	loadSettings();
-	connect(this, SIGNAL(clientMessage(QString, QString, QString)), MPDConnection::self(), SLOT(sendClientMessage(QString, QString, QString)));
-	connect(MPDConnection::self(), SIGNAL(clientMessageFailed(QString, QString)), SLOT(clientMessageFailed(QString, QString)));
-	connect(MPDConnection::self(), SIGNAL(statusUpdated(MPDStatusValues)), this, SLOT(mpdStatusUpdated(MPDStatusValues)));
-	connect(MPDConnection::self(), SIGNAL(currentSongUpdated(Song)), this, SLOT(setSong(Song)));
+	connect(this, &Scrobbler::clientMessage, MPDConnection::self(), &MPDConnection::sendClientMessage);
+	connect(MPDConnection::self(), &MPDConnection::clientMessageFailed, this, &Scrobbler::clientMessageFailed);
+	connect(MPDConnection::self(), &MPDConnection::statusUpdated, this, &Scrobbler::mpdStatusUpdated);
+	connect(MPDConnection::self(), &MPDConnection::currentSongUpdated, this, &Scrobbler::setSong);
 }
 
 Scrobbler::~Scrobbler()
@@ -214,10 +214,10 @@ void Scrobbler::setActive()
 	}
 
 	if (isEnabled() || scrobbleViaMpd) {
-		connect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(mpdStateUpdated()));
+		connect(MPDStatus::self(), &MPDStatus::updated, this, &Scrobbler::mpdStateUpdatedSameSong);
 	}
 	else {
-		disconnect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(mpdStateUpdated()));
+		disconnect(MPDStatus::self(), &MPDStatus::updated, this, &Scrobbler::mpdStateUpdatedSameSong);
 	}
 
 	if (isEnabled() && !inactiveSong.isEmpty()) {
@@ -338,7 +338,7 @@ void Scrobbler::love()
 	}
 	else {
 		QNetworkReply* job = NetworkAccessManager::self()->postFormData(QUrl(scrobblerUrl()), format(params));
-		connect(job, SIGNAL(finished()), this, SLOT(handleResp()));
+		connect(job, &QNetworkReply::finished, this, &Scrobbler::handleResp);
 	}
 }
 
@@ -451,7 +451,7 @@ void Scrobbler::scrobbleNowPlaying()
 	}
 	else {
 		QNetworkReply* job = NetworkAccessManager::self()->postFormData(QUrl(scrobblerUrl()), format(params));
-		connect(job, SIGNAL(finished()), this, SLOT(handleResp()));
+		connect(job, &QNetworkReply::finished, this, &Scrobbler::handleResp);
 	}
 }
 
@@ -521,7 +521,7 @@ void Scrobbler::scrobbleQueued()
 		}
 		else {
 			scrobbleJob = NetworkAccessManager::self()->postFormData(scrobblerUrl(), format(params));
-			connect(scrobbleJob, SIGNAL(finished()), this, SLOT(scrobbleFinished()));
+			connect(scrobbleJob, &QNetworkReply::finished, this, &Scrobbler::scrobbleFinished);
 		}
 	}
 }
@@ -636,7 +636,7 @@ void Scrobbler::authenticate()
 	sign(params);
 
 	authJob = NetworkAccessManager::self()->postFormData(url, format(params));
-	connect(authJob, SIGNAL(finished()), this, SLOT(authResp()));
+	connect(authJob, &QNetworkReply::finished, this, &Scrobbler::authResp);
 	DBUG << url.toString();
 }
 
@@ -763,6 +763,12 @@ void Scrobbler::saveCache()
 	}
 }
 
+void Scrobbler::mpdStateUpdatedSameSong()
+{
+	mpdStateUpdated();
+}
+
+
 void Scrobbler::mpdStateUpdated(bool songChanged)
 {
 	if (isEnabled() && !scrobbleViaMpd) {
@@ -839,14 +845,14 @@ void Scrobbler::clientMessageFailed(const QString& client, const QString& msg)
 void Scrobbler::cancelJobs()
 {
 	if (authJob) {
-		disconnect(authJob, SIGNAL(finished()), this, SLOT(authResp()));
+		disconnect(authJob, &QNetworkReply::finished, this, &Scrobbler::authResp);
 		authJob->close();
 		authJob->abort();
 		authJob->deleteLater();
 		authJob = nullptr;
 	}
 	if (scrobbleJob) {
-		disconnect(scrobbleJob, SIGNAL(finished()), this, SLOT(scrobbleFinished()));
+		disconnect(scrobbleJob, &QNetworkReply::finished, this, &Scrobbler::scrobbleFinished);
 		authJob->close();
 		authJob->abort();
 		authJob->deleteLater();

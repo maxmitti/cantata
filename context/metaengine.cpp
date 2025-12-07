@@ -41,8 +41,8 @@ MetaEngine::MetaEngine(QObject* p)
 {
 	wiki = new WikipediaEngine(this);
 	lastfm = new LastFmEngine(this);
-	connect(wiki, SIGNAL(searchResult(QString, QString)), SLOT(wikiResponse(QString, QString)));
-	connect(lastfm, SIGNAL(searchResult(QString, QString)), SLOT(lastFmResponse(QString, QString)));
+	connect(wiki, &WikipediaEngine::searchResult, this, &MetaEngine::wikiResponse);
+	connect(lastfm, &LastFmEngine::searchResult, this, &MetaEngine::lastFmResponse);
 }
 
 QStringList MetaEngine::getLangs() const

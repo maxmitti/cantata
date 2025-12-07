@@ -193,12 +193,12 @@ void CurrentCover::setEnabled(bool e)
 	enabled = e;
 	if (enabled) {
 		img = stdImage(Song());
-		connect(Covers::self(), SIGNAL(cover(const Song&, const QImage&, const QString&)), this, SLOT(coverRetrieved(const Song&, const QImage&, const QString&)));
-		connect(Covers::self(), SIGNAL(coverUpdated(const Song&, const QImage&, const QString&)), this, SLOT(coverRetrieved(const Song&, const QImage&, const QString&)));
+		connect(Covers::self(), &Covers::cover, this, &CurrentCover::coverRetrieved);
+		connect(Covers::self(), &Covers::coverUpdated, this, &CurrentCover::coverRetrieved);
 	}
 	else {
-		disconnect(Covers::self(), SIGNAL(cover(const Song&, const QImage&, const QString&)), this, SLOT(coverRetrieved(const Song&, const QImage&, const QString&)));
-		disconnect(Covers::self(), SIGNAL(coverUpdated(const Song&, const QImage&, const QString&)), this, SLOT(coverRetrieved(const Song&, const QImage&, const QString&)));
+		disconnect(Covers::self(), &Covers::cover, this, &CurrentCover::coverRetrieved);
+		disconnect(Covers::self(), &Covers::coverUpdated, this, &CurrentCover::coverRetrieved);
 		current = Song();
 	}
 }
@@ -241,7 +241,7 @@ void CurrentCover::update(const Song& s)
 				if (!timer) {
 					timer = new QTimer(this);
 					timer->setSingleShot(true);
-					connect(timer, SIGNAL(timeout()), this, SLOT(setDefault()));
+					connect(timer, &QTimer::timeout, this, &CurrentCover::setDefault);
 				}
 				timer->start(750);
 			}

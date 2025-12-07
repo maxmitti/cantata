@@ -32,7 +32,7 @@ OtherSettings::OtherSettings(QWidget* p)
 	: QWidget(p)
 {
 	setupUi(this);
-	connect(wikipediaIntroOnly, SIGNAL(toggled(bool)), SLOT(toggleWikiNote()));
+	connect(wikipediaIntroOnly, &QCheckBox::toggled, this, &OtherSettings::toggleWikiNote);
 
 	contextBackdrop_none->setProperty(constValueProperty, PlayQueueView::BI_None);
 	contextBackdrop_artist->setProperty(constValueProperty, PlayQueueView::BI_Cover);
@@ -42,11 +42,11 @@ OtherSettings::OtherSettings(QWidget* p)
 	int labelWidth = qMax(fontMetrics().horizontalAdvance(QLatin1String("100%")), fontMetrics().horizontalAdvance(tr("10px", "pixels")));
 	contextBackdropOpacityLabel->setFixedWidth(labelWidth);
 	contextBackdropBlurLabel->setFixedWidth(labelWidth);
-	connect(contextBackdropOpacity, SIGNAL(valueChanged(int)), SLOT(setContextBackdropOpacityLabel()));
-	connect(contextBackdropBlur, SIGNAL(valueChanged(int)), SLOT(setContextBackdropBlurLabel()));
-	connect(contextBackdrop_none, SIGNAL(toggled(bool)), SLOT(enableContextBackdropOptions()));
-	connect(contextBackdrop_artist, SIGNAL(toggled(bool)), SLOT(enableContextBackdropOptions()));
-	connect(contextBackdrop_custom, SIGNAL(toggled(bool)), SLOT(enableContextBackdropOptions()));
+	connect(contextBackdropOpacity, &QSlider::valueChanged, this, &OtherSettings::setContextBackdropOpacityLabel);
+	connect(contextBackdropBlur, &QSlider::valueChanged, this, &OtherSettings::setContextBackdropBlurLabel);
+	connect(contextBackdrop_none, &QRadioButton::toggled, this, &OtherSettings::enableContextBackdropOptions);
+	connect(contextBackdrop_artist, &QRadioButton::toggled, this, &OtherSettings::enableContextBackdropOptions);
+	connect(contextBackdrop_custom, &QRadioButton::toggled, this, &OtherSettings::enableContextBackdropOptions);
 }
 
 void OtherSettings::load()

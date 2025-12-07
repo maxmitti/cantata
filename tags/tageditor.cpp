@@ -178,9 +178,9 @@ TagEditor::TagEditor(QWidget* parent, const QList<Song>& songs,
 		REMOVE(ratingNoteLabel);
 	}
 	else {
-		connect(this, SIGNAL(getRating(QString)), MPDConnection::self(), SLOT(getRating(QString)));
-		connect(this, SIGNAL(setRating(QString, quint8)), MPDConnection::self(), SLOT(setRating(QString, quint8)));
-		connect(MPDConnection::self(), SIGNAL(rating(QString, quint8)), this, SLOT(rating(QString, quint8)));
+		connect(this, &TagEditor::getRating, MPDConnection::self(), &MPDConnection::getRating);
+		connect(this, &TagEditor::setRating, MPDConnection::self(), qOverload<const QString&, quint8>(&MPDConnection::setRating));
+		connect(MPDConnection::self(), &MPDConnection::rating, this, &TagEditor::rating);
 		ratingWidget->setShowZeroForNull(true);
 		QColor col = palette().color(QPalette::WindowText);
 		ratingVarious->setStyleSheet(QString("QLabel{color:rgba(%1,%2,%3,128);}").arg(col.red()).arg(col.green()).arg(col.blue()));
@@ -201,14 +201,14 @@ TagEditor::TagEditor(QWidget* parent, const QList<Song>& songs,
 	setButtonGuiItem(Ok, StdGuiItem::save());
 	setButtonGuiItem(User3, GuiItem(tr("Tools"), fa::fa_solid, fa::fa_magic));
 	QMenu* toolsMenu = new QMenu(this);
-	toolsMenu->addAction(tr("Apply \"Various Artists\" Workaround"), this, SLOT(applyVa()));
-	toolsMenu->addAction(tr("Revert \"Various Artists\" Workaround"), this, SLOT(revertVa()));
-	toolsMenu->addAction(tr("Set 'Album Artist' from 'Artist'"), this, SLOT(setAlbumArtistFromArtist()));
-	toolsMenu->addAction(tr("Capitalize"), this, SLOT(capitalise()));
-	toolsMenu->addAction(tr("Adjust Track Numbers"), this, SLOT(adjustTrackNumbers()));
+	toolsMenu->addAction(tr("Apply \"Various Artists\" Workaround"), this, &TagEditor::applyVa);
+	toolsMenu->addAction(tr("Revert \"Various Artists\" Workaround"), this, &TagEditor::revertVa);
+	toolsMenu->addAction(tr("Set 'Album Artist' from 'Artist'"), this, &TagEditor::setAlbumArtistFromArtist);
+	toolsMenu->addAction(tr("Capitalize"), this, &TagEditor::capitalise);
+	toolsMenu->addAction(tr("Adjust Track Numbers"), this, &TagEditor::adjustTrackNumbers);
 	if (ratingsSupport) {
-		readRatingsAct = toolsMenu->addAction(tr("Read Ratings from File"), this, SLOT(readRatings()));
-		writeRatingsAct = toolsMenu->addAction(tr("Write Ratings to File"), this, SLOT(writeRatings()));
+		readRatingsAct = toolsMenu->addAction(tr("Read Ratings from File"), this, &TagEditor::readRatings);
+		writeRatingsAct = toolsMenu->addAction(tr("Write Ratings to File"), this, &TagEditor::writeRatings);
 		readRatingsAct->setEnabled(false);
 		writeRatingsAct->setEnabled(false);
 	}
@@ -344,29 +344,29 @@ TagEditor::TagEditor(QWidget* parent, const QList<Song>& songs,
 			}
 		}
 	}
-	connect(title, SIGNAL(textChanged(const QString&)), SLOT(checkChanged()));
-	connect(artist, SIGNAL(activated(int)), SLOT(checkChanged()));
-	connect(artist, SIGNAL(editTextChanged(const QString&)), SLOT(checkChanged()));
-	connect(albumArtist, SIGNAL(activated(int)), SLOT(checkChanged()));
-	connect(albumArtist, SIGNAL(editTextChanged(const QString&)), SLOT(checkChanged()));
+	connect(title, &LineEdit::textChanged, this, &TagEditor::checkChanged);
+	connect(artist, &CompletionCombo::activated, this, &TagEditor::checkChanged);
+	connect(artist, &CompletionCombo::editTextChanged, this, &TagEditor::checkChanged);
+	connect(albumArtist, &CompletionCombo::activated, this, &TagEditor::checkChanged);
+	connect(albumArtist, &CompletionCombo::editTextChanged, this, &TagEditor::checkChanged);
 	if (composerSupport) {
-		connect(composer, SIGNAL(activated(int)), SLOT(checkChanged()));
-		connect(composer, SIGNAL(editTextChanged(const QString&)), SLOT(checkChanged()));
+		connect(composer, &CompletionCombo::activated, this, &TagEditor::checkChanged);
+		connect(composer, &CompletionCombo::editTextChanged, this, &TagEditor::checkChanged);
 	}
 	if (commentSupport) {
-		connect(comment, SIGNAL(textChanged(const QString&)), SLOT(checkChanged()));
+		connect(comment, &LineEdit::textChanged, this, &TagEditor::checkChanged);
 	}
-	connect(album, SIGNAL(activated(int)), SLOT(checkChanged()));
-	connect(album, SIGNAL(editTextChanged(const QString&)), SLOT(checkChanged()));
-	connect(genre, SIGNAL(activated(int)), SLOT(checkChanged()));
-	connect(track, SIGNAL(valueChanged(int)), SLOT(checkChanged()));
-	connect(disc, SIGNAL(valueChanged(int)), SLOT(checkChanged()));
-	connect(genre, SIGNAL(editTextChanged(const QString&)), SLOT(checkChanged()));
-	connect(year, SIGNAL(valueChanged(int)), SLOT(checkChanged()));
-	connect(trackName, SIGNAL(activated(int)), SLOT(setIndex(int)));
-	connect(this, SIGNAL(update()), MPDConnection::self(), SLOT(updateMaybe()));
+	connect(album, &CompletionCombo::activated, this, &TagEditor::checkChanged);
+	connect(album, &CompletionCombo::editTextChanged, this, &TagEditor::checkChanged);
+	connect(genre, &CompletionCombo::activated, this, &TagEditor::checkChanged);
+	connect(track, &TagSpinBox::valueChanged, this, &TagEditor::checkChanged);
+	connect(disc, &TagSpinBox::valueChanged, this, &TagEditor::checkChanged);
+	connect(genre, &CompletionCombo::editTextChanged, this, &TagEditor::checkChanged);
+	connect(year, &TagSpinBox::valueChanged, this, &TagEditor::checkChanged);
+	connect(trackName, &QComboBox::activated, this, &TagEditor::setIndex);
+	connect(this, &TagEditor::update, MPDConnection::self(), &MPDConnection::updateMaybe);
 	if (ratingWidget) {
-		connect(ratingWidget, SIGNAL(valueChanged(int)), SLOT(checkRating()));
+		connect(ratingWidget, &RatingWidget::valueChanged, this, &TagEditor::checkRating);
 	}
 	adjustSize();
 	int w = Utils::scaleForDpi(600);
@@ -374,7 +374,7 @@ TagEditor::TagEditor(QWidget* parent, const QList<Song>& songs,
 		resize(w, height());
 	}
 	if (commentSupport) {
-		QTimer::singleShot(0, this, SLOT(readComments()));
+		QTimer::singleShot(0, this, &TagEditor::readComments);
 	}
 	trackName->lineEdit()->setReadOnly(true);
 }

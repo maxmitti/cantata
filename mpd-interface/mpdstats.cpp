@@ -35,7 +35,7 @@ MPDStats* MPDStats::self()
 
 MPDStats::MPDStats()
 {
-	connect(MPDConnection::self(), SIGNAL(statsUpdated(const MPDStatsValues&)), this, SLOT(update(const MPDStatsValues&)), Qt::QueuedConnection);
+	connect(MPDConnection::self(), &MPDConnection::statsUpdated, this, &MPDStats::update, Qt::QueuedConnection);
 }
 
 void MPDStats::update(const MPDStatsValues& v)

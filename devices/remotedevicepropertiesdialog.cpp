@@ -68,8 +68,8 @@ void RemoteDevicePropertiesDialog::show(const DeviceOptions& opts, const RemoteF
 	devProp->showRemoteConnectionNote(!isConnected);
 	devProp->update(QString(), opts, QList<DeviceStorage>(), props, disabledProps);
 	remoteProp->update(det, create, isConnected);
-	connect(devProp, SIGNAL(updated()), SLOT(enableOkButton()));
-	connect(remoteProp, SIGNAL(updated()), SLOT(enableOkButton()));
+	connect(devProp, &DevicePropertiesWidget::updated, this, &RemoteDevicePropertiesDialog::enableOkButton);
+	connect(remoteProp, &RemoteDevicePropertiesWidget::updated, this, &RemoteDevicePropertiesDialog::enableOkButton);
 	Dialog::show();
 	enableButtonOk(false);
 }

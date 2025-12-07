@@ -43,16 +43,16 @@ Mpris::Mpris(QObject* p)
 	new MediaPlayer2Adaptor(this);
 
 	QDBusConnection::sessionBus().registerObject("/org/mpris/MediaPlayer2", this, QDBusConnection::ExportAdaptors);
-	connect(this, SIGNAL(setRandom(bool)), MPDConnection::self(), SLOT(setRandom(bool)));
-	connect(this, SIGNAL(setRepeat(bool)), MPDConnection::self(), SLOT(setRepeat(bool)));
-	connect(this, SIGNAL(setSingle(bool)), MPDConnection::self(), SLOT(setSingle(bool)));
-	connect(this, SIGNAL(setSeekId(qint32, quint32)), MPDConnection::self(), SLOT(setSeekId(qint32, quint32)));
-	connect(this, SIGNAL(seek(qint32)), MPDConnection::self(), SLOT(seek(qint32)));
-	connect(this, SIGNAL(setVolume(int)), MPDConnection::self(), SLOT(setVolume(int)));
+	connect(this, &Mpris::setRandom, MPDConnection::self(), &MPDConnection::setRandom);
+	connect(this, &Mpris::setRepeat, MPDConnection::self(), &MPDConnection::setRepeat);
+	connect(this, &Mpris::setSingle, MPDConnection::self(), &MPDConnection::setSingle);
+	connect(this, &Mpris::setSeekId, MPDConnection::self(), &MPDConnection::setSeekId);
+	connect(this, &Mpris::seek, MPDConnection::self(), &MPDConnection::seek);
+	connect(this, &Mpris::setVolume, MPDConnection::self(), &MPDConnection::setVolume);
 
-	//    connect(MPDConnection::self(), SIGNAL(currentSongUpdated(const Song &)), this, SLOT(updateCurrentSong(const Song &)));
-	//    connect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(updateStatus()));
-	connect(CurrentCover::self(), SIGNAL(coverFile(const QString&)), this, SLOT(updateCurrentCover(const QString&)));
+	//    connect(MPDConnection::self(), &MPDConnection::currentSongUpdated, this, &Mpris::updateCurrentSong);
+	//    connect(MPDStatus::self(), &MPDStatus::updated, this, &Mpris::updateStatus);
+	connect(CurrentCover::self(), &CurrentCover::coverFile, this, &Mpris::updateCurrentCover);
 }
 
 Mpris::~Mpris()

@@ -79,10 +79,10 @@ ActionDialog::ActionDialog(QWidget* parent)
 	skipIcon->setPixmap(style()->standardIcon(QStyle::SP_MessageBoxWarning).pixmap(64, 64));
 	configureSourceButton->setIcon(Icons::self()->configureIcon);
 	configureDestButton->setIcon(Icons::self()->configureIcon);
-	connect(configureSourceButton, SIGNAL(clicked()), SLOT(configureSource()));
-	connect(configureDestButton, SIGNAL(clicked()), SLOT(configureDest()));
-	connect(this, SIGNAL(update()), MPDConnection::self(), SLOT(update()));
-	//    connect(songCount, SIGNAL(leftClickedUrl()), SLOT(showSongs()));
+	connect(configureSourceButton, &QToolButton::clicked, this, &ActionDialog::configureSource);
+	connect(configureDestButton, &QToolButton::clicked, this, &ActionDialog::configureDest);
+	connect(this, &ActionDialog::update, MPDConnection::self(), &MPDConnection::update);
+	//    connect(songCount, &QLabel::leftClickedUrl, this, &ActionDialog::showSongs);
 #ifdef QT_QTDBUS_FOUND
 	unityMessage = QDBusMessage::createSignal("/Cantata", "com.canonical.Unity.LauncherEntry", "Update");
 #endif
@@ -207,7 +207,7 @@ void ActionDialog::calcFileSize()
 	}
 	fileSizeProgress->setValue(fileSizeProgress->value() + toCalc);
 	if (!songsToCalcSize.isEmpty()) {
-		QTimer::singleShot(0, this, SLOT(calcFileSize()));
+		QTimer::singleShot(0, this, &ActionDialog::calcFileSize);
 	}
 	else {
 		qint64 spaceAvailable = 0;
@@ -485,7 +485,7 @@ void ActionDialog::slotButtonClicked(int button)
 
 			if (dev) {
 				if (Close == button) {// Close is only enabled when saving cache...
-					disconnect(dev, SIGNAL(cacheSaved()), this, SLOT(cacheSaved()));
+					disconnect(dev, &Device::cacheSaved, this, &ActionDialog::cacheSaved);
 				}
 				else {
 					dev->abortJob();
@@ -566,8 +566,8 @@ void ActionDialog::doNext()
 
 			if (dev) {
 				if (!currentDev) {
-					connect(dev, SIGNAL(actionStatus(int, bool)), this, SLOT(actionStatus(int, bool)));
-					connect(dev, SIGNAL(progress(int)), this, SLOT(jobPercent(int)));
+					connect(dev, &Device::actionStatus, this, &ActionDialog::actionStatus);
+					connect(dev, &Device::progress, this, &ActionDialog::jobPercent);
 					currentDev = dev;
 				}
 				performingAction = true;
@@ -597,7 +597,7 @@ void ActionDialog::doNext()
 				Device* dev = getDevice(sourceUdi);
 				if (dev) {
 					if (dev != currentDev) {
-						connect(dev, SIGNAL(actionStatus(int)), this, SLOT(actionStatus(int)));
+						connect(dev, &Device::actionStatus, this, &ActionDialog::actionStatus);
 						currentDev = dev;
 					}
 					performingAction = true;
@@ -750,20 +750,20 @@ void ActionDialog::configure(const QString& udi)
 {
 	if (udi.isEmpty()) {
 		DevicePropertiesDialog* dlg = new DevicePropertiesDialog(this);
-		connect(dlg, SIGNAL(updatedSettings(const QString&, const DeviceOptions&)), SLOT(saveProperties(const QString&, const DeviceOptions&)));
+		connect(dlg, &DevicePropertiesDialog::updatedSettings, this, qOverload<const QString&, const DeviceOptions&>(&ActionDialog::saveProperties));
 		if (!mpdConfigured) {
-			connect(dlg, SIGNAL(cancelled()), SLOT(saveProperties()));
+			connect(dlg, &DevicePropertiesDialog::cancelled, this, qOverload<>(&ActionDialog::saveProperties));
 		}
 		dlg->setCaption(tr("Local Music Library Properties"));
 		dlg->show(MPDConnection::self()->getDetails().dir, namingOptions, DevicePropertiesWidget::Prop_Basic | DevicePropertiesWidget::Prop_FileName | (sourceIsAudioCd ? DevicePropertiesWidget::Prop_Encoder : 0));
-		connect(dlg, SIGNAL(destroyed()), SLOT(controlInfoLabel()));
+		connect(dlg, &DevicePropertiesDialog::destroyed, this, qOverload<>(&ActionDialog::controlInfoLabel));
 	}
 	else {
 		Device* dev = DevicesModel::self()->device(udi);
 		if (dev) {
 			dev->configure(this);
-			connect(dev, SIGNAL(configurationChanged()), SLOT(controlInfoLabel()));
-			connect(dev, SIGNAL(renamed()), SLOT(deviceRenamed()));
+			connect(dev, &Device::configurationChanged, this, qOverload<>(&ActionDialog::controlInfoLabel));
+			connect(dev, &Device::renamed, this, &ActionDialog::deviceRenamed);
 		}
 	}
 }
@@ -856,7 +856,7 @@ bool ActionDialog::refreshLibrary()
 			Device* dev = DevicesModel::self()->device(sourceUdi.isEmpty() ? destUdi : sourceUdi);
 
 			if (dev && dev->options().useCache) {
-				connect(dev, SIGNAL(cacheSaved()), this, SLOT(cacheSaved()));
+				connect(dev, &Device::cacheSaved, this, &ActionDialog::cacheSaved);
 				dev->saveCache();
 				progressLabel->setText(tr("Saving cache"));
 				setButtons(Close);
@@ -872,7 +872,7 @@ bool ActionDialog::refreshLibrary()
 			Device* dev = DevicesModel::self()->device(sourceUdi.isEmpty() ? destUdi : sourceUdi);
 
 			if (dev && dev->options().useCache) {
-				connect(dev, SIGNAL(cacheSaved()), this, SLOT(cacheSaved()));
+				connect(dev, &Device::cacheSaved, this, &ActionDialog::cacheSaved);
 				dev->saveCache();
 				progressLabel->setText(tr("Saving cache"));
 				setButtons(Close);
@@ -891,7 +891,7 @@ void ActionDialog::removeSong(const Song& s)
 	}
 
 	DeleteJob* job = new DeleteJob(s.file, true);
-	connect(job, SIGNAL(result(int)), SLOT(removeSongResult(int)));
+	connect(job, &DeleteJob::result, this, &ActionDialog::removeSongResult);
 	job->start();
 }
 
@@ -911,8 +911,8 @@ void ActionDialog::removeSongResult(int status)
 void ActionDialog::cleanDirs()
 {
 	CleanJob* job = new CleanJob(dirsToClean, MPDConnection::self()->getDetails().dir, QString());
-	connect(job, SIGNAL(result(int)), SLOT(cleanDirsResult(int)));
-	connect(job, SIGNAL(percent(int)), SLOT(jobPercent(int)));
+	connect(job, &CleanJob::result, this, &ActionDialog::cleanDirsResult);
+	connect(job, &CleanJob::percent, this, &ActionDialog::jobPercent);
 	job->start();
 }
 

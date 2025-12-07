@@ -50,8 +50,8 @@ void TranscodingJob::run()
 		process = new QProcess;
 		process->setProcessChannelMode(QProcess::MergedChannels);
 		process->setReadChannel(QProcess::StandardOutput);
-		connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(processOutput()));
-		connect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(finished(int, QProcess::ExitStatus)));
+		connect(process, &QProcess::readyReadStandardOutput, this, &TranscodingJob::processOutput);
+		connect(process, &QProcess::finished, this, &TranscodingJob::finished);
 		QString cmd = parameters.takeFirst();
 		process->start(cmd, parameters);
 	}

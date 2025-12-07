@@ -101,7 +101,7 @@ TreeView::TreeView(QWidget* parent, bool menuAlwaysAllowed)
 	//setAttribute(Qt::WA_MouseTracking);
 
 	if (SINGLE_CLICK) {
-		connect(this, SIGNAL(activated(const QModelIndex&)), this, SIGNAL(itemActivated(const QModelIndex&)));
+		connect(this, &TreeView::activated, this, &TreeView::itemActivated);
 	}
 }
 
@@ -121,7 +121,7 @@ void TreeView::setPageDefaults()
 
 void TreeView::setExpandOnClick()
 {
-	connect(this, SIGNAL(clicked(const QModelIndex&)), this, SLOT(itemWasClicked(const QModelIndex&)));
+	connect(this, &TreeView::clicked, this, &TreeView::itemWasClicked);
 }
 
 void TreeView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
@@ -362,11 +362,11 @@ void TreeView::setModel(QAbstractItemModel* m)
 	}
 
 	if (old) {
-		disconnect(old, SIGNAL(layoutChanged()), this, SLOT(correctSelection()));
+		disconnect(old, &QAbstractItemModel::layoutChanged, this, &TreeView::correctSelection);
 	}
 
 	if (m && old != m) {
-		connect(m, SIGNAL(layoutChanged()), this, SLOT(correctSelection()));
+		connect(m, &QAbstractItemModel::layoutChanged, this, &TreeView::correctSelection);
 	}
 }
 

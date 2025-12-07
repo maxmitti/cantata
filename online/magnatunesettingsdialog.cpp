@@ -62,7 +62,7 @@ MagnatuneSettingsDialog::MagnatuneSettingsDialog(QWidget* parent)
 	dl->setVisible(false);     // TODO: Magnatune downloads!
 
 	setMainWidget(mw);
-	connect(member, SIGNAL(currentIndexChanged(int)), SLOT(membershipChanged(int)));
+	connect(member, &QComboBox::currentIndexChanged, this, &MagnatuneSettingsDialog::membershipChanged);
 }
 
 bool MagnatuneSettingsDialog::run(int m, int d, const QString& u, const QString& p)

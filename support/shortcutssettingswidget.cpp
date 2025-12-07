@@ -84,19 +84,19 @@ ShortcutsSettingsWidget::ShortcutsSettingsWidget(const QHash<QString, ActionColl
 	}
 
 	keySequenceWidget->setModel(_shortcutsModel);
-	connect(keySequenceWidget, SIGNAL(keySequenceChanged(QKeySequence, QModelIndex)), SLOT(keySequenceChanged(QKeySequence, QModelIndex)));
+	connect(keySequenceWidget, &KeySequenceWidget::keySequenceChanged, this, &ShortcutsSettingsWidget::keySequenceChanged);
 
-	connect(shortcutsView->selectionModel(), SIGNAL(currentChanged(QModelIndex, QModelIndex)), SLOT(setWidgetStates()));
+	connect(shortcutsView->selectionModel(), &QItemSelectionModel::currentChanged, this, &ShortcutsSettingsWidget::setWidgetStates);
 
 	setWidgetStates();
 
-	connect(useDefault, SIGNAL(clicked(bool)), SLOT(toggledCustomOrDefault()));
-	connect(useCustom, SIGNAL(clicked(bool)), SLOT(toggledCustomOrDefault()));
+	connect(useDefault, &QRadioButton::clicked, this, &ShortcutsSettingsWidget::toggledCustomOrDefault);
+	connect(useCustom, &QRadioButton::clicked, this, &ShortcutsSettingsWidget::toggledCustomOrDefault);
 
-	//   connect(_shortcutsModel, SIGNAL(hasChanged(bool)), SLOT(setChangedState(bool)));
+	//   connect(_shortcutsModel, &MpdSocket::hasChanged, this, &ShortcutsSettingsWidget::setChangedState);
 
 	// fugly, but directly setting it from the ctor doesn't seem to work
-	QTimer::singleShot(0, searchEdit, SLOT(setFocus()));
+	QTimer::singleShot(0, searchEdit, [this] { searchEdit->setFocus(); });
 }
 
 QTreeView* ShortcutsSettingsWidget::view()

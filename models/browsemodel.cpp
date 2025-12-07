@@ -60,7 +60,7 @@ BrowseModel::BrowseModel(QObject* p)
 	: ActionModel(p), root(new FolderItem("/", nullptr)), enabled(false), dbVersion(0)
 {
 	icn = Icon::fa(fa::fa_solid, fa::fa_server);
-	connect(this, SIGNAL(listFolder(QString)), MPDConnection::self(), SLOT(listFolder(QString)));
+	connect(this, &BrowseModel::listFolder, MPDConnection::self(), &MPDConnection::listFolder);
 	folderIndex.insert(root->getPath(), root);
 }
 
@@ -105,14 +105,14 @@ void BrowseModel::setEnabled(bool e)
 	enabled = e;
 
 	if (enabled) {
-		connect(MPDConnection::self(), SIGNAL(folderContents(QString, QStringList, QList<Song>)), this, SLOT(folderContents(QString, QStringList, QList<Song>)));
-		connect(MPDConnection::self(), SIGNAL(connectionChanged(MPDConnectionDetails)), this, SLOT(connectionChanged()));
-		connect(MPDConnection::self(), SIGNAL(statsUpdated(MPDStatsValues)), this, SLOT(statsUpdated(MPDStatsValues)));
+		connect(MPDConnection::self(), &MPDConnection::folderContents, this, &BrowseModel::folderContents);
+		connect(MPDConnection::self(), &MPDConnection::connectionChanged, this, &BrowseModel::connectionChanged);
+		connect(MPDConnection::self(), &MPDConnection::statsUpdated, this, &BrowseModel::statsUpdated);
 	}
 	else {
-		disconnect(MPDConnection::self(), SIGNAL(folderContents(QString, QStringList, QList<Song>)), this, SLOT(folderContents(QString, QStringList, QList<Song>)));
-		disconnect(MPDConnection::self(), SIGNAL(connectionChanged(MPDConnectionDetails)), this, SLOT(connectionChanged()));
-		disconnect(MPDConnection::self(), SIGNAL(statsUpdated(MPDStatsValues)), this, SLOT(statsUpdated(MPDStatsValues)));
+		disconnect(MPDConnection::self(), &MPDConnection::folderContents, this, &BrowseModel::folderContents);
+		disconnect(MPDConnection::self(), &MPDConnection::connectionChanged, this, &BrowseModel::connectionChanged);
+		disconnect(MPDConnection::self(), &MPDConnection::statsUpdated, this, &BrowseModel::statsUpdated);
 		clear();
 	}
 }

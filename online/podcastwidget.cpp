@@ -56,18 +56,18 @@ PodcastWidget::PodcastWidget(PodcastService* s, QWidget* p)
 	view->setModel(&proxy);
 
 	view->alwaysShowHeader();
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
+	connect(view, &ItemView::headerClicked, this, &PodcastWidget::headerClicked);
 
-	connect(subscribeAction, SIGNAL(triggered()), this, SLOT(subscribe()));
-	connect(unSubscribeAction, SIGNAL(triggered()), this, SLOT(unSubscribe()));
-	connect(downloadAction, SIGNAL(triggered()), this, SLOT(download()));
-	connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteDownload()));
-	connect(cancelDownloadAction, SIGNAL(triggered()), this, SLOT(cancelDownload()));
-	connect(markAsNewAction, SIGNAL(triggered()), this, SLOT(markAsNew()));
-	connect(markAsListenedAction, SIGNAL(triggered()), this, SLOT(markAsListened()));
-	//connect(unplayedOnlyAction, SIGNAL(toggled(bool)), this, SLOT(showUnplayedOnly(bool)));
-	connect(exportAction, SIGNAL(triggered()), SLOT(exportSubscriptions()));
-	connect(srv->refreshAct(), SIGNAL(triggered()), this, SLOT(refreshPodcast()));
+	connect(subscribeAction, &Action::triggered, this, &PodcastWidget::subscribe);
+	connect(unSubscribeAction, &Action::triggered, this, &PodcastWidget::unSubscribe);
+	connect(downloadAction, &Action::triggered, this, &PodcastWidget::download);
+	connect(deleteAction, &Action::triggered, this, &PodcastWidget::deleteDownload);
+	connect(cancelDownloadAction, &Action::triggered, this, &PodcastWidget::cancelDownload);
+	connect(markAsNewAction, &Action::triggered, this, &PodcastWidget::markAsNew);
+	connect(markAsListenedAction, &Action::triggered, this, &PodcastWidget::markAsListened);
+	//connect(unplayedOnlyAction, &Action::toggled, this, &PodcastWidget::showUnplayedOnly);
+	connect(exportAction, &Action::triggered, this, &PodcastWidget::exportSubscriptions);
+	connect(srv->refreshAct(), &Action::triggered, this, &PodcastWidget::refreshPodcast);
 
 	view->setMode(ItemView::Mode_DetailedTree);
 	Configuration config(metaObject()->className());
@@ -81,7 +81,7 @@ PodcastWidget::PodcastWidget(PodcastService* s, QWidget* p)
 	                                                       << ItemView::Mode_DetailedTree << ItemView::Mode_List));
 
 	Action* configureAction = new Action(Icons::self()->configureIcon, tr("Configure"), this);
-	connect(configureAction, SIGNAL(triggered()), SLOT(configure()));
+	connect(configureAction, &Action::triggered, this, &PodcastWidget::configure);
 	menu->addAction(configureAction);
 	menu->addAction(exportAction);
 	init(ReplacePlayQueue | AppendToPlayQueue | Refresh, QList<QWidget*>() << menu /* << unplayedOnlyBtn*/, QList<QWidget*>() << addSub);

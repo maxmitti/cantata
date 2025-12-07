@@ -41,8 +41,8 @@ OnlineSettings::OnlineSettings(QWidget* p)
 	providers->setSortingEnabled(true);
 	int iSize = Icon::stdSize(QFontMetricsF(QApplication::font()).height() * 1.25);
 	providers->setIconSize(QSize(iSize, iSize));
-	connect(providers, SIGNAL(currentRowChanged(int)), SLOT(currentProviderChanged(int)));
-	connect(configureButton, SIGNAL(clicked()), this, SLOT(configure()));
+	connect(providers, &QListWidget::currentRowChanged, this, &OnlineSettings::currentProviderChanged);
+	connect(configureButton, &QPushButton::clicked, this, &OnlineSettings::configure);
 	configureButton->setEnabled(false);
 }
 

@@ -243,13 +243,13 @@ void MultiPageWidget::addPage(const QString& name, const QIcon& icon, const QStr
 	static_cast<QVBoxLayout*>(view->layout())->insertWidget(view->layout()->count() - 1, e.btn);
 	addWidget(widget);
 	entries.insert(name, e);
-	connect(e.btn, SIGNAL(clicked()), SLOT(setPage()));
+	connect(e.btn, &SelectorButton::clicked, this, &MultiPageWidget::setPage);
 	infoLabel->setVisible(false);
 	if (qobject_cast<SinglePageWidget*>(widget)) {
-		connect(static_cast<SinglePageWidget*>(widget), SIGNAL(close()), this, SLOT(showMainView()));
+		connect(static_cast<SinglePageWidget*>(widget), &SinglePageWidget::close, this, &MultiPageWidget::showMainView);
 	}
 	else if (qobject_cast<StackedPageWidget*>(widget)) {
-		connect(static_cast<StackedPageWidget*>(widget), SIGNAL(close()), this, SLOT(showMainView()));
+		connect(static_cast<StackedPageWidget*>(widget), &StackedPageWidget::close, this, &MultiPageWidget::showMainView);
 	}
 }
 

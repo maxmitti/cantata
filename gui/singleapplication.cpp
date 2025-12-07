@@ -28,8 +28,8 @@
 SingleApplication::SingleApplication(int& argc, char** argv)
 	: QtSingleApplication(argc, argv)
 {
-	connect(this, SIGNAL(messageReceived(const QString&)), SLOT(message(const QString&)));
-	connect(this, SIGNAL(reconnect()), MPDConnection::self(), SLOT(reconnect()));
+	connect(this, qOverload<const QString&>(&SingleApplication::messageReceived), this, &SingleApplication::message);
+	connect(this, &SingleApplication::reconnect, MPDConnection::self(), &MPDConnection::reconnect);
 }
 
 bool SingleApplication::start(const QStringList& files)

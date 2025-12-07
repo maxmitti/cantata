@@ -189,11 +189,11 @@ HttpSocket::HttpSocket(const QString& iface, quint16 port)
 
 	DBUG << isListening() << serverPort();
 
-	connect(MPDConnection::self(), SIGNAL(socketAddress(QString)), this, SLOT(mpdAddress(QString)));
-	connect(MPDConnection::self(), SIGNAL(cantataStreams(QList<Song>, bool)), this, SLOT(cantataStreams(QList<Song>, bool)));
-	connect(MPDConnection::self(), SIGNAL(cantataStreams(QStringList)), this, SLOT(cantataStreams(QStringList)));
-	connect(MPDConnection::self(), SIGNAL(removedIds(QSet<qint32>)), this, SLOT(removedIds(QSet<qint32>)));
-	connect(this, SIGNAL(newConnection()), SLOT(handleNewConnection()));
+	connect(MPDConnection::self(), &MPDConnection::socketAddress, this, &HttpSocket::mpdAddress);
+	connect(MPDConnection::self(), qOverload<const QStringList&>(&MPDConnection::cantataStreams), this, qOverload<const QStringList&>(&HttpSocket::cantataStreams));
+	connect(MPDConnection::self(), qOverload<const QList<QString>&>(&MPDConnection::cantataStreams), this, qOverload<const QList<QString>&>(&HttpSocket::cantataStreams));
+	connect(MPDConnection::self(), &MPDConnection::removedIds, this, &HttpSocket::removedIds);
+	connect(this, &HttpSocket::newConnection, this, &HttpSocket::handleNewConnection);
 }
 
 bool HttpSocket::openPort(quint16 p)
@@ -243,8 +243,8 @@ void HttpSocket::handleNewConnection()
 			return;
 		}
 
-		connect(socket, SIGNAL(readyRead()), this, SLOT(readClient()));
-		connect(socket, SIGNAL(disconnected()), this, SLOT(discardClient()));
+		connect(socket, &QTcpSocket::readyRead, this, &HttpSocket::readClient);
+		connect(socket, &QTcpSocket::disconnected, this, &HttpSocket::discardClient);
 	}
 }
 

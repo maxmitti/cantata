@@ -101,7 +101,7 @@ AutohidingSplitter::AutohidingSplitter(Qt::Orientation orientation, QWidget* par
 	autohideAnimation->setSplitter(this);
 	autohideAnimation->setDuration(100);
 	autohideAnimation->setEasingCurve(QEasingCurve::Linear);
-	//connect(this, SIGNAL(splitterMoved(int, int)), this, SLOT(updateAfterSplitterMoved(int, int)));
+	//connect(this, &AutohidingSplitter::splitterMoved, this, &AutohidingSplitter::updateAfterSplitterMoved);
 	setMinimumWidth(32);
 	setHandleWidth(splitterSize(this));
 }
@@ -114,7 +114,7 @@ AutohidingSplitter::AutohidingSplitter(QWidget* parent)
 	autohideAnimation->setSplitter(this);
 	autohideAnimation->setDuration(100);
 	autohideAnimation->setEasingCurve(QEasingCurve::Linear);
-	//connect(this, SIGNAL(splitterMoved(int, int)), this, SLOT(updateAfterSplitterMoved(int, int)));
+	//connect(this, &AutohidingSplitter::splitterMoved, this, &AutohidingSplitter::updateAfterSplitterMoved);
 	setMinimumWidth(32);
 	setHandleWidth(1);
 }
@@ -134,8 +134,8 @@ AutohidingSplitter::~AutohidingSplitter()
 QSplitterHandle* AutohidingSplitter::createHandle()
 {
 	AutohidingSplitterHandle* sh = new AutohidingSplitterHandle(orientation(), this);
-	connect(sh, SIGNAL(hoverStarted()), this, SLOT(handleHoverStarted()));
-	connect(sh, SIGNAL(hoverFinished()), this, SLOT(handleHoverFinished()));
+	connect(sh, &AutohidingSplitterHandle::hoverStarted, this, &AutohidingSplitter::handleHoverStarted);
+	connect(sh, &AutohidingSplitterHandle::hoverFinished, this, &AutohidingSplitter::handleHoverFinished);
 	return sh;
 }
 
@@ -261,13 +261,13 @@ void AutohidingSplitter::setAutoHideEnabled(bool ah)
 	autoHideEnabled = ah;
 	if (autoHideEnabled) {
 		expandedSizes = sizes();
-		connect(this, SIGNAL(splitterMoved(int, int)), this, SLOT(updateAfterSplitterMoved(int, int)));
+		connect(this, &AutohidingSplitter::splitterMoved, this, &AutohidingSplitter::updateAfterSplitterMoved);
 	}
 	else {
 		for (int i = 0; i < widgetAutohidden.count(); ++i) {
 			widgetAutohidden[i] = false;
 		}
-		disconnect(this, SIGNAL(splitterMoved(int, int)), this, SLOT(updateAfterSplitterMoved(int, int)));
+		disconnect(this, &AutohidingSplitter::splitterMoved, this, &AutohidingSplitter::updateAfterSplitterMoved);
 		setSizes(expandedSizes);
 	}
 }
@@ -308,7 +308,7 @@ void AutohidingSplitter::addWidget(QWidget* widget)
 		QTimer* sat = new QTimer(this);
 		sat->setSingleShot(true);
 		sat->setInterval(500);
-		connect(sat, SIGNAL(timeout()), this, SLOT(setWidgetForHiding()));
+		connect(sat, &QTimer::timeout, this, &AutohidingSplitter::setWidgetForHiding);
 		animationDelayTimer.append(sat);
 		widgetAutohidden.append(false);
 		widgetAutohiddenPrev.append(false);
@@ -479,14 +479,14 @@ void AutohidingSplitter::startAnimation()
 		return;
 	}
 
-	disconnect(this, SLOT(startAnimation()));
+	disconnect(autohideAnimation, &SplitterSizeAnimation::finished, this, &AutohidingSplitter::startAnimation);
 	if (!targetSizes.isEmpty()) {
 		QList<int> nextSizes = targetSizes.dequeue();
 
 		autohideAnimation->setStartValue(QVariant::fromValue(sizes()));
 		autohideAnimation->setCurrentTime(0);
 		autohideAnimation->setEndValue(QVariant::fromValue(nextSizes));
-		connect(autohideAnimation, SIGNAL(finished()), this, SLOT(startAnimation()));
+		connect(autohideAnimation, &SplitterSizeAnimation::finished, this, &AutohidingSplitter::startAnimation);
 		autohideAnimation->start();
 	}
 }

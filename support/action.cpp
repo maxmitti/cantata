@@ -33,27 +33,6 @@ Action::Action(QObject* parent)
 	init();
 }
 
-Action::Action(const QString& text, QObject* parent, const QObject* receiver, const char* slot, const QKeySequence& shortcut)
-	: QAction(parent)
-{
-	init();
-	setText(text);
-	setShortcut(shortcut);
-	if (receiver && slot)
-		connect(this, SIGNAL(triggered()), receiver, slot);
-}
-
-Action::Action(const QIcon& icon, const QString& text, QObject* parent, const QObject* receiver, const char* slot, const QKeySequence& shortcut)
-	: QAction(parent)
-{
-	init();
-	setIcon(icon);
-	setText(text);
-	setShortcut(shortcut);
-	if (receiver && slot)
-		connect(this, SIGNAL(triggered()), receiver, slot);
-}
-
 void Action::initIcon(QAction* act)
 {
 	if (GtkStyle::isActive() && act) {
@@ -99,7 +78,7 @@ QString Action::settingsText(QAction* act)
 
 void Action::init()
 {
-	connect(this, SIGNAL(triggered(bool)), this, SLOT(slotTriggered()));
+	connect(this, &QAction::triggered, this, &Action::slotTriggered);
 
 	setProperty("isShortcutConfigurable", true);
 }
@@ -127,6 +106,11 @@ void Action::setSettingsText(const QString& text)
 void Action::setSettingsText(Action* parent)
 {
 	setSettingsText(Utils::strippedText(parent->text()) + QLatin1String(" / ") + Utils::strippedText(text()));
+}
+
+void Action::emitTriggered()
+{
+	emit QAction::triggered();
 }
 
 QKeySequence Action::shortcut(ShortcutTypes type) const

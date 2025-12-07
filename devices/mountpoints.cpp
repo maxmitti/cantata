@@ -35,7 +35,7 @@ MountPoints::MountPoints()
 	mounts = new QFile("/proc/mounts", this);
 	if (mounts && mounts->open(QIODevice::ReadOnly)) {
 		QSocketNotifier* notifier = new QSocketNotifier(mounts->handle(), QSocketNotifier::Exception, mounts);
-		connect(notifier, SIGNAL(activated(int)), this, SLOT(updateMountPoints()));
+		connect(notifier, &QSocketNotifier::activated, this, &MountPoints::updateMountPoints);
 		updateMountPoints();
 	}
 	else if (mounts) {

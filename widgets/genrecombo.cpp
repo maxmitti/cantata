@@ -42,7 +42,7 @@ GenreCombo::GenreCombo(QWidget* p)
 		action->setShortcut(Qt::ControlModifier | Qt::Key_G);
 	}
 	addAction(action);
-	connect(action, SIGNAL(triggered()), SLOT(showEntries()));
+	connect(action, &Action::triggered, this, &GenreCombo::showEntries);
 }
 
 void GenreCombo::update(const QSet<QString>& g)

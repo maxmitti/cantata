@@ -40,7 +40,7 @@ SyncCollectionWidget::SyncCollectionWidget(QWidget* parent, const QString& title
 	setupUi(this);
 	titleLabel->setText(title);
 	cfgButton->setIcon(Icons::self()->configureIcon);
-	connect(cfgButton, SIGNAL(clicked(bool)), SIGNAL(configure()));
+	connect(cfgButton, &ToolButton::clicked, this, &SyncCollectionWidget::configure);
 
 	proxy.setSourceModel(&model);
 	tree->setModel(&proxy);
@@ -48,14 +48,14 @@ SyncCollectionWidget::SyncCollectionWidget(QWidget* parent, const QString& title
 	tree->setUseSimpleDelegate();
 	search->setText(QString());
 	search->setPlaceholderText(tr("Search"));
-	connect(&proxy, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this, SLOT(dataChanged(QModelIndex, QModelIndex)));
-	connect(search, SIGNAL(returnPressed()), this, SLOT(delaySearchItems()));
-	connect(search, SIGNAL(textChanged(const QString)), this, SLOT(delaySearchItems()));
+	connect(&proxy, &MusicLibraryProxyModel::dataChanged, this, &SyncCollectionWidget::dataChanged);
+	connect(search, &LineEdit::returnPressed, this, &SyncCollectionWidget::delaySearchItems);
+	connect(search, &LineEdit::textChanged, this, &SyncCollectionWidget::delaySearchItems);
 
 	checkAction = new Action(tr("Check Items"), this);
-	connect(checkAction, SIGNAL(triggered()), SLOT(checkItems()));
+	connect(checkAction, &Action::triggered, this, qOverload<>(&SyncCollectionWidget::checkItems));
 	unCheckAction = new Action(tr("Uncheck Items"), this);
-	connect(unCheckAction, SIGNAL(triggered()), SLOT(unCheckItems()));
+	connect(unCheckAction, &Action::triggered, this, &SyncCollectionWidget::unCheckItems);
 	tree->addAction(checkAction);
 	tree->addAction(unCheckAction);
 	tree->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -67,14 +67,14 @@ SyncCollectionWidget::SyncCollectionWidget(QWidget* parent, const QString& title
 		tree->addAction(collapse);
 		addAction(expand);
 		addAction(collapse);
-		connect(expand, SIGNAL(triggered()), this, SLOT(expandAll()));
-		connect(collapse, SIGNAL(triggered()), this, SLOT(collapseAll()));
+		connect(expand, &QAction::triggered, this, &SyncCollectionWidget::expandAll);
+		connect(collapse, &QAction::triggered, this, &SyncCollectionWidget::collapseAll);
 	}
 
-	connect(tree, SIGNAL(itemsSelected(bool)), checkAction, SLOT(setEnabled(bool)));
-	connect(tree, SIGNAL(itemsSelected(bool)), unCheckAction, SLOT(setEnabled(bool)));
-	connect(tree, SIGNAL(itemActivated(const QModelIndex&)), this, SLOT(itemActivated(const QModelIndex&)));
-	connect(tree, SIGNAL(clicked(const QModelIndex&)), this, SLOT(itemClicked(const QModelIndex&)));
+	connect(tree, &TreeView::itemsSelected, checkAction, &Action::setEnabled);
+	connect(tree, &TreeView::itemsSelected, unCheckAction, &Action::setEnabled);
+	connect(tree, &TreeView::itemActivated, this, &SyncCollectionWidget::itemActivated);
+	connect(tree, &TreeView::clicked, this, &SyncCollectionWidget::itemClicked);
 }
 
 SyncCollectionWidget::~SyncCollectionWidget()
@@ -189,7 +189,7 @@ void SyncCollectionWidget::delaySearchItems()
 		if (!searchTimer) {
 			searchTimer = new QTimer(this);
 			searchTimer->setSingleShot(true);
-			connect(searchTimer, SIGNAL(timeout()), SLOT(searchItems()));
+			connect(searchTimer, &QTimer::timeout, this, &SyncCollectionWidget::searchItems);
 		}
 		searchTimer->start(500);
 	}

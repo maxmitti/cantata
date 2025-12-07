@@ -261,8 +261,8 @@ void StreamFetcher::doNext()
 
 			job = NetworkAccessManager::self()->get(u, constTimeout);
 			DBUG << "Check" << u.toString() << static_cast<void*>(job);
-			connect(job, SIGNAL(readyRead()), this, SLOT(dataReady()));
-			connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
+			connect(job, &NetworkJob::readyRead, this, &StreamFetcher::dataReady);
+			connect(job, &NetworkJob::finished, this, qOverload<>(&StreamFetcher::jobFinished));
 			return;
 		}
 		else {
@@ -321,8 +321,8 @@ void StreamFetcher::jobFinished(NetworkJob* reply)
 	// We only handle 1 job at a time!
 	DBUG << static_cast<void*>(reply);
 	if (reply == job) {
-		disconnect(job, SIGNAL(readyRead()), this, SLOT(dataReady()));
-		disconnect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
+		disconnect(job, &NetworkJob::readyRead, this, &StreamFetcher::dataReady);
+		disconnect(job, &NetworkJob::finished, this, qOverload<>(&StreamFetcher::jobFinished));
 		bool redirected = false;
 		if (!reply->error()) {
 			QString u = parse(data, reply->origUrl().host());
@@ -339,8 +339,8 @@ void StreamFetcher::jobFinished(NetworkJob* reply)
 					orig.setQuery(query);
 					job = NetworkAccessManager::self()->get(orig, constTimeout);
 					DBUG << "Check plain" << orig.toString() << static_cast<void*>(job);
-					connect(job, SIGNAL(readyRead()), this, SLOT(dataReady()));
-					connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
+					connect(job, &NetworkJob::readyRead, this, &StreamFetcher::dataReady);
+					connect(job, &NetworkJob::finished, this, qOverload<>(&StreamFetcher::jobFinished));
 					redirected = true;
 					data.clear();
 				}
@@ -356,8 +356,8 @@ void StreamFetcher::jobFinished(NetworkJob* reply)
 				data.clear();
 				cancelJob();
 				job = NetworkAccessManager::self()->get(u, constTimeout);
-				connect(job, SIGNAL(readyRead()), this, SLOT(dataReady()));
-				connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
+				connect(job, &NetworkJob::readyRead, this, &StreamFetcher::dataReady);
+				connect(job, &NetworkJob::finished, this, qOverload<>(&StreamFetcher::jobFinished));
 				redirected = true;
 			}
 			else {
@@ -380,8 +380,8 @@ void StreamFetcher::jobFinished(NetworkJob* reply)
 void StreamFetcher::cancelJob()
 {
 	if (job) {
-		disconnect(job, SIGNAL(readyRead()), this, SLOT(dataReady()));
-		disconnect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
+		disconnect(job, &NetworkJob::readyRead, this, &StreamFetcher::dataReady);
+		disconnect(job, &NetworkJob::finished, this, qOverload<>(&StreamFetcher::jobFinished));
 		job->cancelAndDelete();
 		job = nullptr;
 	}
