@@ -891,7 +891,6 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(playNextAction, &Action::triggered, this, &MainWindow::moveSelectionAfterCurrentSong);
 	connect(moveToBeginning, &Action::triggered, this, &MainWindow::moveSelectionAtQueueStart);
 	connect(moveToEnd, &Action::triggered, this, &MainWindow::moveSelectionAtQueueEnd);
-	connect(qApp, &QGuiApplication::paletteChanged, this, &MainWindow::paletteChanged);
 
 	connect(StdActions::self()->searchAction, &Action::triggered, this, &MainWindow::showSearch);
 	connect(searchPlayQueueAction, &Action::triggered, this, &MainWindow::showPlayQueueSearch);
@@ -1182,6 +1181,14 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 	previousSize = event->oldSize();
 	QMainWindow::resizeEvent(event);
 	controlView();
+}
+
+bool MainWindow::event(QEvent* event)
+{
+	if (event->type() == QEvent::ApplicationPaletteChange) {
+		paletteChanged();
+	}
+	return QMainWindow::event(event);
 }
 
 void MainWindow::playQueueItemsSelected(bool s)

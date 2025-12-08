@@ -55,6 +55,7 @@ class QAbstractItemView;
 #ifdef QT_QTDBUS_FOUND
 class Mpris;
 #endif
+class QEvent;
 class QTimer;
 class QPropertyAnimation;
 class QActionGroup;
@@ -118,6 +119,7 @@ protected:
 	void showEvent(QShowEvent* event) override;
 	void closeEvent(QCloseEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
+	bool event(QEvent* event) override;
 
 private:
 #if !defined Q_OS_WIN
