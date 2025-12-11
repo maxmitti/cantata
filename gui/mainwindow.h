@@ -152,6 +152,7 @@ Q_SIGNALS:
 	void playNext(const QList<quint32>& items, quint32 pos, quint32 size);
 
 public Q_SLOTS:
+	void showErrorWithActions(const QString& message, bool showActions);
 	void showError(const QString& message);
 	void showInformation(const QString& message);
 	void dynamicStatus(const QString& message);
