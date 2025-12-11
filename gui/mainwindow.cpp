@@ -833,7 +833,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(MPDConnection::self(), &MPDConnection::playlistUpdated, this, &MainWindow::updatePlayQueue);
 	connect(MPDConnection::self(), &MPDConnection::currentSongUpdated, this, [this](const Song& song) { updateCurrentSong(song); });
 	connect(MPDConnection::self(), &MPDConnection::stateChanged, this, &MainWindow::mpdConnectionStateChanged);
-	connect(MPDConnection::self(), &MPDConnection::error, this, &MainWindow::showError);
+	connect(MPDConnection::self(), &MPDConnection::error, this, &MainWindow::showErrorWithActions);
 	connect(MPDConnection::self(), &MPDConnection::info, this, &MainWindow::showInformation);
 	connect(MPDConnection::self(), &MPDConnection::dirChanged, this, &MainWindow::checkMpdDir);
 	connect(MPDConnection::self(), &MPDConnection::connectionNotChanged, this, &MainWindow::mpdConnectionName);
@@ -1072,7 +1072,7 @@ void MainWindow::addMenuAction(QMenu* menu, QAction* action)
 }
 #endif
 
-void MainWindow::showError(const QString& message)
+void MainWindow::showErrorWithActions(const QString& message, bool showActions)
 {
 	if (!message.isEmpty()) {
 		if (!isVisible()) {
@@ -1087,8 +1087,18 @@ void MainWindow::showError(const QString& message)
 	else {
 		messageWidget->setError(message);
 	}
-	messageWidget->removeAllActions();
+	if (showActions) {
+		messageWidget->setActions(QList<QAction*>() << prefAction << connectAction);
+	}
+	else {
+		messageWidget->removeAllActions();
+	}
 	QApplication::alert(this);
+}
+
+void MainWindow::showError(const QString& message)
+{
+	showErrorWithActions(message, false);
 }
 
 void MainWindow::showInformation(const QString& message)
