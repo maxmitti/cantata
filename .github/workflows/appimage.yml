@@ -1,0 +1,83 @@
+name: AppImage Build
+
+on:
+  pull_request:
+    types: 
+      - opened
+      - reopened
+      - synchronize
+    branches:
+      - main
+
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    name: AppImage
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.11'
+        arch: 'linux_gcc_64'
+        modules: 'qtconnectivity qthttpserver qtimageformats qtmultimedia'
+
+    - name: Install dependencies
+      run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libavahi-client-dev libutfcpp-dev libcdparanoia-dev libcdio-paranoia-dev libavcodec-dev libavutil-dev libavformat-dev libmpg123-dev libmtp-dev libudev-dev libebur128-dev libmusicbrainz5-dev libcddb2-dev
+
+    - name: Build TagLib
+      run: |
+        git clone --depth 1 https://github.com/taglib/taglib --revision v2.1.1
+        cd taglib
+        cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release .
+        cmake --build build -j$(nproc)
+        sudo cmake --install build
+
+    - name: Configure
+      run: cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DBUNDLED_KCATEGORIZEDVIEW=ON -DBUNDLED_KARCHIVE=ON
+
+    - name: Build
+      run: cmake --build build -j$(nproc)
+
+    - name: Install into AppDir
+      run: DESTDIR=AppDir cmake --install build
+
+    - name: Download linuxdeploy
+      run: |
+        curl -L -o linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20251107-1/linuxdeploy-x86_64.AppImage
+        curl -L -O https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/1-alpha-20250213-1/linuxdeploy-plugin-qt-x86_64.AppImage
+        chmod +x linuxdeploy linuxdeploy-plugin-qt-x86_64.AppImage
+
+
+    - name: Remove unnecessary troublesome plugins
+      run: |
+        # Unfortunately linuxdeploy-plugin-qt fails on failed dependencies even though the plugins are optional
+        rm "$QT_ROOT_DIR/plugins/imageformats/libqtiff.so"
+        rm "$QT_ROOT_DIR"/plugins/sqldrivers/libqsql{oci,mimer}.so
+
+    - name: Symlink some Qt plugins (linuxdeploy shortcoming workaround)
+      run: |
+        mkdir -p AppDir/usr/plugins/{wayland-shell-integration,wayland-graphics-integration-client}
+        ln -s ../platforms/libxdg-shell.so AppDir/usr/plugins/wayland-shell-integration/
+        ln -s ../platforms/libqt-plugin-wayland-egl.so AppDir/usr/plugins/wayland-graphics-integration-client/
+
+    - name: Create AppImage
+      run: |
+        EXTRA_PLATFORM_PLUGINS="libqwayland.so;../wayland-shell-integration/libxdg-shell.so;../wayland-graphics-integration-client/libqt-plugin-wayland-egl.so" DEPLOY_PLATFORM_THEMES=true NO_STRIP=1 ./linuxdeploy --plugin qt --appdir AppDir --executable AppDir/usr/libexec/Cantata/cantata-tags --executable AppDir/usr/libexec/Cantata/cantata-replaygain -o appimage
+
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: AppImage
+        path: Cantata-x86_64.AppImage
+        if-no-files-found: error
