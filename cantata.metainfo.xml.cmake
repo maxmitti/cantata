@@ -56,6 +56,23 @@
   </screenshots>
 
   <releases>
+	<release version="3.5.0" date="2026-06-12">
+		<url type="details">https://github.com/nullobsi/cantata/releases/tag/v3.5.0</url>
+		<description>
+			<p>Minor release.</p>
+			<ul>
+				<li>Update to FontAwesome 7.</li>
+				<li>Add Turkish translation.</li>
+				<li>Use bundled FontAwesome by default.</li>
+				<li>Fix dynamic playlists with the Flatpak build.</li>
+				<li>Fix unreadable first run wizard on Windows 11 dark mode.</li>
+				<li>Fix Nix build.</li>
+				<li>Fix CMake COMPILE_WARNING_AS_ERROR not being marked as a cache variable.</li>
+				<li>Fix ignored nodiscard function return value.</li>
+				<li>Update GitHub workflows.</li>
+			</ul>
+		</description>
+	</release>
 	<release version="3.4.0" date="2025-12-02">
 		<url type="details">https://github.com/nullobsi/cantata/releases/tag/v3.4.0</url>
 		<description>

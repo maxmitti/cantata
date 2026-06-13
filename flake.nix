@@ -6,7 +6,7 @@
 	outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachDefaultSystem (system:
 		let
 			name = "cantata";
-			version = "3.4.0";
+			version = "3.5.0";
 			pkgs = import nixpkgs {
 				inherit system;
 			};
