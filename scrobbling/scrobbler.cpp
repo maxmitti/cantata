@@ -768,7 +768,6 @@ void Scrobbler::mpdStateUpdatedSameSong()
 	mpdStateUpdated();
 }
 
-
 void Scrobbler::mpdStateUpdated(bool songChanged)
 {
 	if (isEnabled() && !scrobbleViaMpd) {

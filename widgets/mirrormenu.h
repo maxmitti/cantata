@@ -35,7 +35,7 @@ public:
 	QAction* addAction(const QString& text);
 	QAction* addAction(const QIcon& icon, const QString& text);
 
-	template <typename Receiver>
+	template<typename Receiver>
 	QAction* addAction(const QString& text, const Receiver* receiver, void (Receiver::*slot)(), const QKeySequence& shortcut = 0)
 	{
 		QAction* act = QMenu::addAction(text, shortcut, receiver, slot);
@@ -43,7 +43,7 @@ public:
 		return act;
 	}
 
-	template <typename Receiver>
+	template<typename Receiver>
 	QAction* addAction(const QIcon& icon, const QString& text, const Receiver* receiver, void (Receiver::*slot)(), const QKeySequence& shortcut = 0)
 
 	{

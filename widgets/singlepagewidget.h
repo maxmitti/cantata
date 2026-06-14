@@ -28,8 +28,8 @@
 #include "mpd-interface/mpdconnection.h"
 #include "mpd-interface/song.h"
 #include "widgets/itemview.h"
-#include <QWidget>
 #include <QActionGroup>
+#include <QWidget>
 
 class Action;
 
@@ -46,7 +46,7 @@ public:
 
 	typedef QPair<QString, int> MenuItem;
 	static const char* constValProp;
-	template <typename Widget>
+	template<typename Widget>
 	static QList<QAction*> createActions(const QList<MenuItem>& values, int currentVal, Widget* parent, void (Widget::*slot)())
 	{
 		QList<QAction*> actions;
@@ -65,7 +65,7 @@ public:
 
 	static Action* createMenuGroup(const QString& name, const QList<QAction*> actions, QWidget* parent);
 
-	template <typename Widget>
+	template<typename Widget>
 	static Action* createMenuGroup(const QString& name, const QList<MenuItem>& values, int currentVal, Widget* parent, void (Widget::*slot)())
 	{
 		return createMenuGroup(name, createActions(values, currentVal, parent, slot), parent);

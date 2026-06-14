@@ -76,7 +76,7 @@ public:
 	QAction* addAction(const QString& name, QAction* action);
 	Action* addAction(const QString& name, Action* action);
 
-	template <typename Receiver = QObject>
+	template<typename Receiver = QObject>
 	Action* addAction(const QString& name, const Receiver* receiver = nullptr, void (Receiver::*slot)() = nullptr)
 	{
 		Action* a = new Action(this);

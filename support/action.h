@@ -50,7 +50,7 @@ public:
 
 	explicit Action(QObject* parent);
 
-	template <typename Receiver = QObject>
+	template<typename Receiver = QObject>
 	Action(const QString& text, QObject* parent, const Receiver* receiver = nullptr, void (Receiver::*slot)() = nullptr, const QKeySequence& shortcut = 0)
 		: QAction(parent)
 	{
@@ -61,7 +61,7 @@ public:
 			connect(this, &QAction::triggered, receiver, slot);
 	}
 
-	template <typename Receiver = QObject>
+	template<typename Receiver = QObject>
 	Action(const QIcon& icon, const QString& text, QObject* parent, const Receiver* receiver = nullptr, void (Receiver::*slot)() = nullptr, const QKeySequence& shortcut = 0)
 		: QAction(parent)
 	{
