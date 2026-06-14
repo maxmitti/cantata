@@ -80,8 +80,7 @@ Q_DECL_UNUSED static Action* copyAction(Action* orig)
 	Action* newAction = new Action(orig->parent());
 	newAction->setText(Utils::strippedText(orig->text()));
 	newAction->setIcon(orig->icon());
-	QObject::connect(newAction, &Action::triggered, orig, &Action::triggered);
-	QObject::connect(newAction, &Action::triggered, orig, &Action::triggered);
+	QObject::connect(newAction, &QAction::triggered, orig, &Action::emitTriggered);
 	return newAction;
 }
 

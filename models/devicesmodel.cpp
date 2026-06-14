@@ -632,9 +632,9 @@ void DevicesModel::addLocalDevice(const QString& udi)
 		collections.append(dev);
 		endInsertRows();
 		connect(dev, &Device::updating, this, &DevicesModel::deviceUpdating);
-		connect(dev, &Device::error, &Device::error);
+		connect(dev, &Device::error, this, &DevicesModel::error);
 		connect(dev, &Device::cover, this, qOverload<const Song&, const QImage&>(&DevicesModel::setCover));
-		connect(dev, &Device::updatedDetails, &Device::updatedDetails);
+		connect(dev, &Device::updatedDetails, this, &DevicesModel::updatedDetails);
 		connect(dev, &Device::play, this, &DevicesModel::play);
 		connect(dev, &Device::renamed, this, &DevicesModel::updateItemMenu);
 #if defined CDDB_FOUND || defined MusicBrainz5_FOUND
@@ -702,7 +702,7 @@ void DevicesModel::addRemoteDevice(const DeviceOptions& opts, RemoteFsDevice::De
 		collections.append(dev);
 		endInsertRows();
 		connect(dev, &Device::updating, this, &DevicesModel::deviceUpdating);
-		connect(dev, &Device::error, &Device::error);
+		connect(dev, &Device::error, this, &DevicesModel::error);
 		connect(dev, &Device::cover, this, qOverload<const Song&, const QImage&>(&DevicesModel::setCover));
 		if (Device::RemoteFs == dev->devType()) {
 			connect(static_cast<RemoteFsDevice*>(dev), &RemoteFsDevice::udiChanged, this, &DevicesModel::remoteDeviceUdiChanged);
@@ -852,7 +852,7 @@ void DevicesModel::loadRemote()
 		for (Device* dev : rem) {
 			collections.append(dev);
 			connect(dev, &Device::updating, this, &DevicesModel::deviceUpdating);
-			connect(dev, &Device::error, &Device::error);
+			connect(dev, &Device::error, this, &DevicesModel::error);
 			connect(dev, &Device::cover, this, qOverload<const Song&, const QImage&>(&DevicesModel::setCover));
 			if (Device::RemoteFs == dev->devType()) {
 				connect(static_cast<RemoteFsDevice*>(dev), &RemoteFsDevice::udiChanged, this, &DevicesModel::remoteDeviceUdiChanged);

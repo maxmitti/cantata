@@ -58,7 +58,7 @@ public:
 		setText(text);
 		setShortcut(shortcut);
 		if (receiver && slot)
-			connect(this, &Action::triggered, receiver, slot);
+			connect(this, &QAction::triggered, receiver, slot);
 	}
 
 	template <typename Receiver = QObject>
@@ -70,7 +70,7 @@ public:
 		setText(text);
 		setShortcut(shortcut);
 		if (receiver && slot)
-			connect(this, &Action::triggered, receiver, slot);
+			connect(this, &QAction::triggered, receiver, slot);
 	}
 
 	QKeySequence shortcut(ShortcutTypes types = ActiveShortcut) const;

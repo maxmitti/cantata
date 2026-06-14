@@ -162,7 +162,7 @@ ConfigDialog::ConfigDialog(QWidget* parent, const QString& name, const QSize& de
 	else {
 		buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply, Qt::Horizontal, mw);
 		lay->addWidget(buttonBox);
-		connect(buttonBox, &MpdSocket::clicked, this, &ConfigDialog::macButtonPressed);
+		connect(buttonBox, &QDialogButtonBox::clicked, this, &ConfigDialog::macButtonPressed);
 		buttonBox->setStyle(Dialog::buttonProxyStyle());
 		// Hide window buttons if not instany apply - dont want user just closing dialog
 		setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint | Qt::WindowMaximizeButtonHint);
@@ -214,7 +214,7 @@ void ConfigDialog::addPage(const QString& id, QWidget* widget, const QString& na
 	stack->addWidget(widget);
 	group->addButton(newPage.item);
 	pages.insert(id, newPage);
-	connect(newPage.item, &MpdSocket::toggled, this, &ConfigDialog::activatePage);
+	connect(newPage.item, &QToolButton::toggled, this, &ConfigDialog::activatePage);
 	int sz = 0;
 	QMap<QString, Page>::const_iterator it = pages.begin();
 	QMap<QString, Page>::const_iterator end = pages.end();

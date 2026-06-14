@@ -95,9 +95,9 @@ void VolumeSlider::initActions()
 	}
 	muteAction = ActionCollection::get()->createAction("mute", tr("Mute"));
 	addAction(muteAction);
-	connect(muteAction, &Action::triggered, this, &VolumeSlider::muteToggled);
-	connect(StdActions::self()->increaseVolumeAction, &Action::triggered, this, &VolumeSlider::increaseVolume);
-	connect(StdActions::self()->decreaseVolumeAction, &Action::triggered, this, &VolumeSlider::decreaseVolume);
+	connect(muteAction, &QAction::triggered, this, &VolumeSlider::muteToggled);
+	connect(StdActions::self()->increaseVolumeAction, &QAction::triggered, this, &VolumeSlider::increaseVolume);
+	connect(StdActions::self()->decreaseVolumeAction, &QAction::triggered, this, &VolumeSlider::decreaseVolume);
 	if (isMpdVol) {
 		connect(MPDStatus::self(), &MPDStatus::updated, this, &VolumeSlider::updateStatus);
 		connect(this, &VolumeSlider::valueChanged, MPDConnection::self(), &MPDConnection::setVolume);

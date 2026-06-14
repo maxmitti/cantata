@@ -101,7 +101,7 @@ QWinThumbnailToolButton* ThumbnailToolBar::createButton(Action* act)
 	btn->setToolTip(act->text());
 	btn->setIcon(act->icon());
 	btn->setEnabled(false);
-	QObject::connect(btn, &QWinThumbnailToolButton::clicked, act, &MpdSocket::triggered);
+	QObject::connect(btn, &QWinThumbnailToolButton::clicked, act, &Action::emitTriggered);
 	addButton(btn);
 	return btn;
 }

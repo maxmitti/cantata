@@ -191,7 +191,7 @@ HttpSocket::HttpSocket(const QString& iface, quint16 port)
 
 	connect(MPDConnection::self(), &MPDConnection::socketAddress, this, &HttpSocket::mpdAddress);
 	connect(MPDConnection::self(), qOverload<const QStringList&>(&MPDConnection::cantataStreams), this, qOverload<const QStringList&>(&HttpSocket::cantataStreams));
-	connect(MPDConnection::self(), qOverload<const QList<QString>&>(&MPDConnection::cantataStreams), this, qOverload<const QList<QString>&>(&HttpSocket::cantataStreams));
+	connect(MPDConnection::self(), qOverload<const QList<Song>&, bool>(&MPDConnection::cantataStreams), this, qOverload<const QList<Song>&, bool>(&HttpSocket::cantataStreams));
 	connect(MPDConnection::self(), &MPDConnection::removedIds, this, &HttpSocket::removedIds);
 	connect(this, &HttpSocket::newConnection, this, &HttpSocket::handleNewConnection);
 }
