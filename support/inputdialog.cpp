@@ -44,7 +44,7 @@ InputDialog::InputDialog(const QString& caption, const QString& label, const QSt
 	if (options.isEmpty()) {
 		edit->setText(value);
 		edit->setEchoMode(echo);
-		connect(edit, SIGNAL(textChanged(QString)), this, SLOT(enableOkButton()));
+		connect(edit, &LineEdit::textChanged, this, &InputDialog::enableOkButton);
 	}
 	else {
 		QStringList items = options;
@@ -54,7 +54,7 @@ InputDialog::InputDialog(const QString& caption, const QString& label, const QSt
 		std::sort(items.begin(), items.end());
 		combo->addItems(items);
 		combo->setCurrentText(value.isEmpty() ? QString() : value);
-		connect(combo, SIGNAL(editTextChanged(QString)), this, SLOT(enableOkButton()));
+		connect(combo, &ComboBox::editTextChanged, this, &InputDialog::enableOkButton);
 	}
 	enableOkButton();
 }

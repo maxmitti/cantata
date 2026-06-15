@@ -128,11 +128,11 @@ const QString constFilename = QLatin1String("FILENAME:");
 DynamicPlaylists::DynamicPlaylists()
 	: RulesPlaylists(fa::fa_solid, fa::fa_random, "dynamic"), localTimer(nullptr), usingRemote(false), remoteTimer(nullptr), remotePollingEnabled(false), statusTime(0), currentCommand(Unknown)
 {
-	connect(this, SIGNAL(clear()), MPDConnection::self(), SLOT(clear()));
-	connect(MPDConnection::self(), SIGNAL(dynamicSupport(bool)), this, SLOT(remoteDynamicSupported(bool)));
-	connect(this, SIGNAL(remoteMessage(QStringList)), MPDConnection::self(), SLOT(sendDynamicMessage(QStringList)));
-	connect(MPDConnection::self(), SIGNAL(dynamicResponse(QStringList)), this, SLOT(remoteResponse(QStringList)));
-	QTimer::singleShot(500, this, SLOT(checkHelper()));
+	connect(this, &DynamicPlaylists::clear, MPDConnection::self(), &MPDConnection::clear);
+	connect(MPDConnection::self(), &MPDConnection::dynamicSupport, this, &DynamicPlaylists::remoteDynamicSupported);
+	connect(this, &DynamicPlaylists::remoteMessage, MPDConnection::self(), &MPDConnection::sendDynamicMessage);
+	connect(MPDConnection::self(), &MPDConnection::dynamicResponse, this, &DynamicPlaylists::remoteResponse);
+	QTimer::singleShot(500, this, &DynamicPlaylists::checkHelper);
 	startAction = ActionCollection::get()->createAction("startdynamic", tr("Start Dynamic Playlist"), Icons::self()->replacePlayQueueIcon);
 	stopAction = ActionCollection::get()->createAction("stopdynamic", tr("Stop Dynamic Mode"), Icons::self()->stopDynamicIcon);
 }
@@ -373,7 +373,7 @@ bool DynamicPlaylists::controlApp(bool isStart)
 
 	if (!localTimer) {
 		localTimer = new QTimer(this);
-		connect(localTimer, SIGNAL(timeout()), SLOT(checkHelper()));
+		connect(localTimer, &QTimer::timeout, this, &DynamicPlaylists::checkHelper);
 	}
 	bool rv = process.waitForFinished(1000);
 	if (isStart && rv) {
@@ -604,7 +604,7 @@ void DynamicPlaylists::pollRemoteHelper()
 {
 	if (!remoteTimer) {
 		remoteTimer = new QTimer(this);
-		connect(remoteTimer, SIGNAL(timeout()), SLOT(checkIfRemoteIsRunning()));
+		connect(remoteTimer, &QTimer::timeout, this, &DynamicPlaylists::checkIfRemoteIsRunning);
 	}
 	beginResetModel();
 	entryList.clear();
@@ -687,7 +687,7 @@ void DynamicPlaylists::remoteResponse(QStringList msg)
 		break;
 	case SetActive:
 		if (!msg.isEmpty() && msg.at(0) == constOk) {
-			QTimer::singleShot(1000, this, SLOT(updateRemoteStatus()));
+			QTimer::singleShot(1000, this, &DynamicPlaylists::updateRemoteStatus);
 		}
 		else {
 			emit error(tr("Failed to set the current dynamic rules. (%1)").arg(remoteError(msg)));

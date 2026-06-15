@@ -33,7 +33,7 @@ StretchHeaderView::StretchHeaderView(Qt::Orientation orientation, QWidget* paren
 	  stretch_enabled_(false),
 	  in_mouse_move_event_(false)
 {
-	connect(this, SIGNAL(sectionResized(int, int, int)), SLOT(SectionResized(int, int, int)));
+	connect(this, &StretchHeaderView::sectionResized, this, &StretchHeaderView::SectionResized);
 }
 
 void StretchHeaderView::setModel(QAbstractItemModel* model)

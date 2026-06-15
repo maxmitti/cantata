@@ -127,10 +127,10 @@ void CacheItemCounter::deleteAll()
 CacheItem::CacheItem(const QString& title, const QString& d, const QStringList& t, QTreeWidget* p, Type ty)
 	: QTreeWidgetItem(p, QStringList() << title), counter(new CacheItemCounter(title, d, t)), empty(true), usedSpace(0), type(ty)
 {
-	connect(this, SIGNAL(getCount()), counter, SLOT(getCount()), Qt::QueuedConnection);
-	connect(this, SIGNAL(deleteAll()), counter, SLOT(deleteAll()), Qt::QueuedConnection);
-	connect(counter, SIGNAL(count(int, quint64)), this, SLOT(update(int, quint64)), Qt::QueuedConnection);
-	connect(this, SIGNAL(updated()), p, SIGNAL(itemSelectionChanged()));
+	connect(this, &CacheItem::getCount, counter, &CacheItemCounter::getCount, Qt::QueuedConnection);
+	connect(this, &CacheItem::deleteAll, counter, &CacheItemCounter::deleteAll, Qt::QueuedConnection);
+	connect(counter, &CacheItemCounter::count, this, qOverload<int, quint64>(&CacheItem::update), Qt::QueuedConnection);
+	connect(this, &CacheItem::updated, p, &QTreeWidget::itemSelectionChanged);
 }
 
 CacheItem::~CacheItem()
@@ -281,7 +281,7 @@ CacheSettings::CacheSettings(QWidget* parent)
 #endif
 
 	for (int i = 0; i < tree->topLevelItemCount(); ++i) {
-		connect(static_cast<CacheItem*>(tree->topLevelItem(i)), SIGNAL(updated()), this, SLOT(updateSpace()));
+		connect(static_cast<CacheItem*>(tree->topLevelItem(i)), &CacheItem::updated, this, &CacheSettings::updateSpace);
 	}
 
 	spaceLabel = new SpaceLabel(this);
@@ -290,8 +290,8 @@ CacheSettings::CacheSettings(QWidget* parent)
 	layout->addWidget(button, row++, 1, 1, 1);
 	button->setEnabled(false);
 
-	connect(tree, SIGNAL(itemSelectionChanged()), this, SLOT(controlButton()));
-	connect(button, SIGNAL(clicked()), this, SLOT(deleteAll()));
+	connect(tree, &QTreeWidget::itemSelectionChanged, this, &CacheSettings::controlButton);
+	connect(button, &QPushButton::clicked, this, &CacheSettings::deleteAll);
 }
 
 CacheSettings::~CacheSettings()

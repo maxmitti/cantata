@@ -81,9 +81,9 @@ SearchWidget::SearchWidget(QWidget* p, int extraSpace)
 	redOpt.insert("color", Icon::constRed);
 	closeButton->setIcon(Icon::fa(fa::fa_solid, fa::fa_close, redOpt));
 	Icon::init(closeButton);
-	connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
-	connect(edit, SIGNAL(textChanged(QString)), SIGNAL(textChanged(QString)));
-	connect(edit, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+	connect(closeButton, &ToolButton::clicked, this, &SearchWidget::close);
+	connect(edit, &LineEdit::textChanged, this, &SearchWidget::textChanged);
+	connect(edit, &LineEdit::returnPressed, this, &SearchWidget::returnPressed);
 	installEventFilter(new EscKeyEventHandler(this));
 	;
 	setTabOrder(edit, closeButton);
@@ -107,8 +107,8 @@ void SearchWidget::setCategories(const QList<Category>& categories)
 		QHBoxLayout* l = static_cast<QHBoxLayout*>(layout());
 		l->insertWidget(0, cat);
 		l->setSpacing(qMin(4, Utils::layoutSpacing(this)));
-		connect(cat, SIGNAL(activated(int)), SIGNAL(returnPressed()));
-		connect(cat, SIGNAL(activated(int)), this, SLOT(categoryActivated(int)));
+		connect(cat, &SelectorLabel::activated, this, &SearchWidget::returnPressed);
+		connect(cat, &SelectorLabel::activated, this, &SearchWidget::categoryActivated);
 		setTabOrder(cat, edit);
 		cat->setFixedHeight(edit->height());
 	}

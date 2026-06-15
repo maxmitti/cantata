@@ -49,8 +49,8 @@ void AlbumScanner::start()
 		proc = new QProcess(this);
 		proc->setProcessChannelMode(QProcess::MergedChannels);
 		proc->setReadChannel(QProcess::StandardOutput);
-		connect(proc, SIGNAL(finished(int)), this, SLOT(procFinished()));
-		connect(proc, SIGNAL(readyReadStandardOutput()), this, SLOT(read()));
+		connect(proc, &QProcess::finished, this, &AlbumScanner::procFinished);
+		connect(proc, &QProcess::readyReadStandardOutput, this, &AlbumScanner::read);
 		proc->start(Utils::helper(QLatin1String("cantata-replaygain")), fileNames, QProcess::ReadOnly);
 	}
 }
@@ -58,8 +58,8 @@ void AlbumScanner::start()
 void AlbumScanner::stop()
 {
 	if (proc) {
-		disconnect(proc, SIGNAL(finished(int)), this, SLOT(procFinished()));
-		disconnect(proc, SIGNAL(readyReadStandardOutput()), this, SLOT(read()));
+		disconnect(proc, &QProcess::finished, this, &AlbumScanner::procFinished);
+		disconnect(proc, &QProcess::readyReadStandardOutput, this, &AlbumScanner::read);
 		proc->terminate();
 		proc->deleteLater();
 		proc = 0;

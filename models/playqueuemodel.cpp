@@ -415,30 +415,30 @@ PlayQueueModel::PlayQueueModel(QObject* parent)
 	collator.setNumericMode(true);
 	collator.setIgnorePunctuation(true);
 	fetcher = new StreamFetcher(this);
-	connect(this, SIGNAL(modelReset()), this, SLOT(stats()));
-	connect(fetcher, SIGNAL(result(const QStringList&, int, int, quint8, bool)), SLOT(addFiles(const QStringList&, int, int, quint8, bool)));
-	connect(fetcher, SIGNAL(result(const QStringList&, int, int, quint8, bool)), SIGNAL(streamsFetched()));
-	connect(fetcher, SIGNAL(status(QString)), SIGNAL(streamFetchStatus(QString)));
-	connect(this, SIGNAL(filesAdded(const QStringList, quint32, quint32, int, quint8, bool)),
-	        MPDConnection::self(), SLOT(add(const QStringList, quint32, quint32, int, quint8, bool)));
-	connect(this, SIGNAL(populate(QStringList, QList<quint8>)), MPDConnection::self(), SLOT(populate(QStringList, QList<quint8>)));
-	connect(this, SIGNAL(move(const QList<quint32>&, quint32, quint32)),
-	        MPDConnection::self(), SLOT(move(const QList<quint32>&, quint32, quint32)));
-	connect(this, SIGNAL(setOrder(const QList<quint32>&)), MPDConnection::self(), SLOT(setOrder(const QList<quint32>&)));
-	connect(MPDConnection::self(), SIGNAL(prioritySet(const QMap<qint32, quint8>&)), SLOT(prioritySet(const QMap<qint32, quint8>&)));
-	connect(MPDConnection::self(), SIGNAL(stopAfterCurrentChanged(bool)), SLOT(stopAfterCurrentChanged(bool)));
-	connect(this, SIGNAL(stop(bool)), MPDConnection::self(), SLOT(stopPlaying(bool)));
-	connect(this, SIGNAL(clearStopAfter()), MPDConnection::self(), SLOT(clearStopAfter()));
-	connect(this, SIGNAL(removeSongs(QList<qint32>)), MPDConnection::self(), SLOT(removeSongs(QList<qint32>)));
-	connect(this, SIGNAL(clearEntries()), MPDConnection::self(), SLOT(clear()));
-	connect(this, SIGNAL(addAndPlay(QString)), MPDConnection::self(), SLOT(addAndPlay(QString)));
-	connect(this, SIGNAL(startPlayingSongId(qint32)), MPDConnection::self(), SLOT(startPlayingSongId(qint32)));
-	connect(this, SIGNAL(getRating(QString)), MPDConnection::self(), SLOT(getRating(QString)));
-	connect(this, SIGNAL(setRating(QStringList, quint8)), MPDConnection::self(), SLOT(setRating(QStringList, quint8)));
-	connect(MPDConnection::self(), SIGNAL(rating(QString, quint8)), SLOT(ratingResult(QString, quint8)));
-	connect(MPDConnection::self(), SIGNAL(stickerDbChanged()), SLOT(stickerDbChanged()));
+	connect(this, &PlayQueueModel::modelReset, this, &PlayQueueModel::stats);
+	connect(fetcher, &StreamFetcher::result, this, &PlayQueueModel::addFiles);
+	connect(fetcher, &StreamFetcher::result, this, &PlayQueueModel::streamsFetched);
+	connect(fetcher, &StreamFetcher::status, this, &PlayQueueModel::streamFetchStatus);
+	connect(this, &PlayQueueModel::filesAdded,
+	        MPDConnection::self(), qOverload<const QStringList&, quint32, quint32, int, quint8, bool>(&MPDConnection::add));
+	connect(this, &PlayQueueModel::populate, MPDConnection::self(), &MPDConnection::populate);
+	connect(this, &PlayQueueModel::move,
+	        MPDConnection::self(), qOverload<const QList<quint32>&, quint32, quint32>(&MPDConnection::move));
+	connect(this, &PlayQueueModel::setOrder, MPDConnection::self(), &MPDConnection::setOrder);
+	connect(MPDConnection::self(), &MPDConnection::prioritySet, this, &PlayQueueModel::prioritySet);
+	connect(MPDConnection::self(), &MPDConnection::stopAfterCurrentChanged, this, &PlayQueueModel::stopAfterCurrentChanged);
+	connect(this, &PlayQueueModel::stop, MPDConnection::self(), &MPDConnection::stopPlaying);
+	connect(this, &PlayQueueModel::clearStopAfter, MPDConnection::self(), &MPDConnection::clearStopAfter);
+	connect(this, &PlayQueueModel::removeSongs, MPDConnection::self(), &MPDConnection::removeSongs);
+	connect(this, &PlayQueueModel::clearEntries, MPDConnection::self(), &MPDConnection::clear);
+	connect(this, &PlayQueueModel::addAndPlay, MPDConnection::self(), &MPDConnection::addAndPlay);
+	connect(this, &PlayQueueModel::startPlayingSongId, MPDConnection::self(), &MPDConnection::startPlayingSongId);
+	connect(this, &PlayQueueModel::getRating, MPDConnection::self(), &MPDConnection::getRating);
+	connect(this, qOverload<const QStringList&, quint8>(&PlayQueueModel::setRating), MPDConnection::self(), qOverload<const QStringList&, quint8>(&MPDConnection::setRating));
+	connect(MPDConnection::self(), &MPDConnection::rating, this, qOverload<const QString&, quint8>(&PlayQueueModel::ratingResult));
+	connect(MPDConnection::self(), &MPDConnection::stickerDbChanged, this, &PlayQueueModel::stickerDbChanged);
 #ifdef ENABLE_DEVICES_SUPPORT//TODO: Problems here with devices support!!!
-	connect(DevicesModel::self(), SIGNAL(updatedDetails(QList<Song>)), SLOT(updateDetails(QList<Song>)));
+	connect(DevicesModel::self(), &DevicesModel::updatedDetails, this, &PlayQueueModel::updateDetails);
 #endif
 
 	removeDuplicatesAction = new Action(tr("Remove Duplicates"), this);
@@ -447,16 +447,16 @@ PlayQueueModel::PlayQueueModel(QObject* parent)
 	undoAction->setShortcut(QKeyCombination(Qt::ControlModifier, Qt::Key_Z));
 	redoAction = ActionCollection::get()->createAction("playqueue-redo", tr("Redo"), Icon::fa(fa::fa_solid, fa::fa_redo));
 	redoAction->setShortcut(QKeyCombination(Qt::ShiftModifier | Qt::ControlModifier, Qt::Key_Z));
-	connect(undoAction, SIGNAL(triggered()), this, SLOT(undo()));
-	connect(redoAction, SIGNAL(triggered()), this, SLOT(redo()));
-	connect(removeDuplicatesAction, SIGNAL(triggered()), this, SLOT(removeDuplicates()));
+	connect(undoAction, &Action::triggered, this, &PlayQueueModel::undo);
+	connect(redoAction, &Action::triggered, this, &PlayQueueModel::redo);
+	connect(removeDuplicatesAction, &Action::triggered, this, &PlayQueueModel::removeDuplicates);
 
 	shuffleAction = new Action(tr("Shuffle"), this);
 	shuffleAction->setMenu(new QMenu(nullptr));
 	Action* shuffleTracksAction = new Action(tr("Tracks"), shuffleAction);
 	Action* shuffleAlbumsAction = new Action(tr("Albums"), shuffleAction);
-	connect(shuffleTracksAction, SIGNAL(triggered()), MPDConnection::self(), SLOT(shuffle()));
-	connect(shuffleAlbumsAction, SIGNAL(triggered()), this, SLOT(shuffleAlbums()));
+	connect(shuffleTracksAction, &Action::triggered, MPDConnection::self(), qOverload<>(&MPDConnection::shuffle));
+	connect(shuffleAlbumsAction, &Action::triggered, this, &PlayQueueModel::shuffleAlbums);
 	shuffleAction->menu()->addAction(shuffleTracksAction);
 	shuffleAction->menu()->addAction(shuffleAlbumsAction);
 
@@ -1433,7 +1433,7 @@ void PlayQueueModel::addSortAction(const QString& name, const QString& key)
 	Action* action = new Action(name, sortAction);
 	action->setProperty(constSortByKey, key);
 	sortAction->menu()->addAction(action);
-	connect(action, SIGNAL(triggered()), SLOT(sortBy()));
+	connect(action, &Action::triggered, this, &PlayQueueModel::sortBy);
 }
 
 static bool otherSort(const Song* s1, const Song* s2, quint32 other)

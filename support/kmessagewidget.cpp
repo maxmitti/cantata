@@ -40,6 +40,7 @@ void KMsgWidgetPrivate::init(KMsgWidget* q_ptr)
 	q->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
 
 	timeLine = new QTimeLine(500, q);
+
 	QObject::connect(timeLine, SIGNAL(valueChanged(qreal)), q, SLOT(slotTimeLineChanged(qreal)));
 	QObject::connect(timeLine, SIGNAL(finished()), q, SLOT(slotTimeLineFinished()));
 
@@ -58,7 +59,7 @@ void KMsgWidgetPrivate::init(KMsgWidget* q_ptr)
 	iconOpt.insert("color", Icon::constRed);
 	closeAction->setIcon(Icon::fa(fa::fa_solid, fa::fa_close, iconOpt));
 	closeAction->setToolTip(QObject::tr("Close"));
-	QObject::connect(closeAction, SIGNAL(triggered()), q, SLOT(animatedHide()));
+	QObject::connect(closeAction, &QAction::triggered, q, &KMsgWidget::animatedHide);
 
 	closeButton = new FlatToolButton(content);
 	closeButton->setDefaultAction(closeAction);

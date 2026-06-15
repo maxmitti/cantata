@@ -103,13 +103,13 @@ ArtistView::ArtistView(QWidget* parent)
 {
 	engine = ContextEngine::create(this);
 	refreshAction = ActionCollection::get()->createAction("refreshartist", tr("Refresh Artist Information"), Icons::self()->refreshIcon);
-	connect(refreshAction, SIGNAL(triggered()), this, SLOT(refresh()));
-	connect(engine, SIGNAL(searchResult(QString, QString)), this, SLOT(searchResponse(QString, QString)));
-	connect(Covers::self(), SIGNAL(artistImage(Song, QImage, QString)), SLOT(artistImage(Song, QImage, QString)));
-	connect(Covers::self(), SIGNAL(coverUpdated(Song, QImage, QString)), SLOT(artistImageUpdated(Song, QImage, QString)));
-	connect(text, SIGNAL(anchorClicked(QUrl)), SLOT(show(QUrl)));
+	connect(refreshAction, &Action::triggered, this, &ArtistView::refresh);
+	connect(engine, &ContextEngine::searchResult, this, &ArtistView::searchResponse);
+	connect(Covers::self(), &Covers::artistImage, this, &ArtistView::artistImage);
+	connect(Covers::self(), &Covers::coverUpdated, this, &ArtistView::artistImageUpdated);
+	connect(text, &TextBrowser::anchorClicked, this, &ArtistView::show);
 	text->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(text, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
+	connect(text, &TextBrowser::customContextMenuRequested, this, &ArtistView::showContextMenu);
 	setStandardHeader(tr("Artist"));
 
 	int imageHeight = fontMetrics().height() * 14;
@@ -119,7 +119,7 @@ ArtistView::ArtistView(QWidget* parent)
 	if (constCacheAge > 0) {
 		clearCache();
 		QTimer* timer = new QTimer(this);
-		connect(timer, SIGNAL(timeout()), this, SLOT(clearCache()));
+		connect(timer, &QTimer::timeout, this, &ArtistView::clearCache);
 		timer->start((int)((constCacheAge / 2.0) * 1000 * 24 * 60 * 60));
 	}
 }
@@ -369,7 +369,7 @@ void ArtistView::requestSimilar()
 
 	currentSimilarJob = NetworkAccessManager::self()->get(url);
 	currentSimilarJob->setProperty(constNameKey, currentSong.artist);
-	connect(currentSimilarJob, SIGNAL(finished()), this, SLOT(handleSimilarReply()));
+	connect(currentSimilarJob, &NetworkJob::finished, this, &ArtistView::handleSimilarReply);
 }
 
 void ArtistView::abort()

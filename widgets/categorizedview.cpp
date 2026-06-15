@@ -109,10 +109,10 @@ CategorizedView::CategorizedView(QWidget* parent)
 	setUniformItemSizes(true);
 	setAttribute(Qt::WA_MouseTracking);
 	setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-	connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(showCustomContextMenu(const QPoint&)));
-	connect(this, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(checkDoubleClick(const QModelIndex&)));
-	connect(this, SIGNAL(clicked(const QModelIndex&)), this, SLOT(checkClicked(const QModelIndex&)));
-	connect(this, SIGNAL(activated(const QModelIndex&)), this, SLOT(checkActivated(const QModelIndex&)));
+	connect(this, &CategorizedView::customContextMenuRequested, this, &CategorizedView::showCustomContextMenu);
+	connect(this, &CategorizedView::doubleClicked, this, &CategorizedView::checkDoubleClick);
+	connect(this, &CategorizedView::clicked, this, &CategorizedView::checkClicked);
+	connect(this, &CategorizedView::activated, this, &CategorizedView::checkActivated);
 
 	setViewMode(QListView::IconMode);
 	setResizeMode(QListView::Adjust);
@@ -172,11 +172,11 @@ void CategorizedView::setModel(QAbstractItemModel* m)
 	proxy->setSourceModel(m);
 
 	if (old) {
-		disconnect(old, SIGNAL(layoutChanged()), this, SLOT(correctSelection()));
+		disconnect(old, &QAbstractItemModel::layoutChanged, this, &CategorizedView::correctSelection);
 	}
 
 	if (m && old != m) {
-		connect(m, SIGNAL(layoutChanged()), this, SLOT(correctSelection()));
+		connect(m, &QAbstractItemModel::layoutChanged, this, &CategorizedView::correctSelection);
 	}
 	if (m) {
 		KCategorizedView::setModel(proxy);

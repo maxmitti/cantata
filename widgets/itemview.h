@@ -157,7 +157,7 @@ private:
 public Q_SLOTS:
 	void focusSearch(const QString& text = QString());
 	void focusView();
-	void showSpinner(bool v = true);
+	void showSpinner();
 	void hideSpinner();
 	void updating();
 	void updated();

@@ -143,10 +143,10 @@ PodcastPage::PodcastPage(QWidget* p, const QString& n)
 	spinner->setWidget(tree);
 	imageSpinner = new Spinner(this);
 	imageSpinner->setWidget(text);
-	connect(tree, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
+	connect(tree, &QTreeWidget::itemSelectionChanged, this, &PodcastPage::selectionChanged);
 	tree->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	text->setOpenLinks(false);
-	connect(text, SIGNAL(anchorClicked(QUrl)), SLOT(openLink(QUrl)));
+	connect(text, &TextBrowser::anchorClicked, this, &PodcastPage::openLink);
 	updateText();
 }
 
@@ -162,7 +162,7 @@ void PodcastPage::fetch(const QUrl& url)
 	tree->clear();
 	spinner->start();
 	job = NetworkAccessManager::self()->get(url);
-	connect(job, SIGNAL(finished()), this, SLOT(jobFinished()));
+	connect(job, &NetworkJob::finished, this, &PodcastPage::jobFinished);
 }
 
 void PodcastPage::fetchImage(const QUrl& url)
@@ -171,7 +171,7 @@ void PodcastPage::fetchImage(const QUrl& url)
 	imageSpinner->start();
 	imageJob = NetworkAccessManager::self()->get(url, 5000);
 	imageJob->setProperty(constOrigUrlProperty, url);
-	connect(imageJob, SIGNAL(finished()), this, SLOT(imageJobFinished()));
+	connect(imageJob, &NetworkJob::finished, this, &PodcastPage::imageJobFinished);
 }
 
 void PodcastPage::cancel()
@@ -352,8 +352,8 @@ PodcastSearchPage::PodcastSearchPage(QWidget* p, const QString& n, int s, int i,
 	viewLayout->addWidget(text, 0);
 	mainLayout->addLayout(searchLayout);
 	mainLayout->addLayout(viewLayout);
-	connect(search, SIGNAL(returnPressed()), SLOT(doSearch()));
-	connect(searchButton, SIGNAL(clicked()), SLOT(doSearch()));
+	connect(search, &LineEdit::returnPressed, this, &PodcastSearchPage::doSearch);
+	connect(searchButton, &QPushButton::clicked, this, &PodcastSearchPage::doSearch);
 	icn = Icon::fa(s, i);
 }
 
@@ -406,7 +406,7 @@ OpmlBrowsePage::OpmlBrowsePage(QWidget* p, const QString& n, const QIcon& i, con
 	mainLayout->addWidget(text, 0);
 	Action* act = new Action(tr("Reload"), this);
 	tree->addAction(act);
-	connect(act, SIGNAL(triggered()), this, SLOT(reload()));
+	connect(act, &Action::triggered, this, &OpmlBrowsePage::reload);
 	tree->setContextMenuPolicy(Qt::ActionsContextMenu);
 	icn = i;
 }
@@ -505,9 +505,9 @@ PodcastUrlPage::PodcastUrlPage(QWidget* p)
 	mainLayout->addWidget(new QLabel(tr("Enter podcast URL below, and press 'Load', or press the folder icon to load a local podcast file."), this));
 	mainLayout->addLayout(searchLayout);
 	mainLayout->addLayout(viewLayout);
-	connect(urlEntry, SIGNAL(returnPressed()), SLOT(loadUrl()));
-	connect(loadButton, SIGNAL(clicked()), SLOT(loadUrl()));
-	connect(pathReq, SIGNAL(clicked()), SLOT(openPath()));
+	connect(urlEntry, &LineEdit::returnPressed, this, &PodcastUrlPage::loadUrl);
+	connect(loadButton, &QPushButton::clicked, this, &PodcastUrlPage::loadUrl);
+	connect(pathReq, &FlatToolButton::clicked, this, &PodcastUrlPage::openPath);
 	icn = Icons::self()->rssListIcon;
 }
 
@@ -642,8 +642,8 @@ PodcastSearchDialog::PodcastSearchDialog(PodcastService* s, QWidget* parent)
 	pages << loadDirectories(QString(), true, loaded);
 
 	for (PodcastPage* p : pages) {
-		connect(p, SIGNAL(rssSelected(QUrl)), SLOT(rssSelected(QUrl)));
-		connect(p, SIGNAL(error(QString)), SLOT(showError(QString)));
+		connect(p, &PodcastPage::rssSelected, this, &PodcastSearchDialog::rssSelected);
+		connect(p, &PodcastPage::error, this, &PodcastSearchDialog::showError);
 	}
 
 	setCaption(tr("Add Podcast Subscription"));
@@ -655,9 +655,9 @@ PodcastSearchDialog::PodcastSearchDialog(PodcastService* s, QWidget* parent)
 	if (-1 == maxImageSize) {
 		maxImageSize = fontMetrics().height() * 8;
 	}
-	connect(service, SIGNAL(newError(QString)), this, SLOT(showError(QString)));
-	connect(messageWidget, SIGNAL(visible(bool)), SLOT(msgWidgetVisible(bool)));
-	connect(pageWidget, SIGNAL(currentPageChanged()), this, SLOT(pageChanged()));
+	connect(service, &PodcastService::newError, this, &PodcastSearchDialog::showError);
+	connect(messageWidget, &MessageWidget::visible, this, &PodcastSearchDialog::msgWidgetVisible);
+	connect(pageWidget, &PageWidget::currentPageChanged, this, &PodcastSearchDialog::pageChanged);
 	messageWidget->hide();
 }
 

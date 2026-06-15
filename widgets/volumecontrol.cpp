@@ -56,7 +56,7 @@ VolumeControl::VolumeControl(QWidget* p)
 	layout->addWidget(label);
 	mpdVol->ensurePolished();
 	setFixedSize(mpdVol->width(), mpdVol->height() + (size * 2));
-	connect(httpVol, SIGNAL(stateChanged()), SLOT(stateChanged()));
+	connect(httpVol, &VolumeSlider::stateChanged, this, &VolumeControl::stateChanged);
 	mpdVol->setEnabled(true);
 	httpVol->setEnabled(false);
 	label->setAlignment(Qt::AlignCenter);
@@ -68,8 +68,8 @@ VolumeControl::VolumeControl(QWidget* p)
 	httpVol->setActive(false);
 	label->setVisible(false);
 
-	connect(label, SIGNAL(activated(int)), SLOT(itemSelected(int)));
-	QTimer::singleShot(500, this, SLOT(selectControl()));
+	connect(label, &SelectorLabel::activated, this, &VolumeControl::itemSelected);
+	QTimer::singleShot(500, this, &VolumeControl::selectControl);
 }
 
 VolumeControl::~VolumeControl()

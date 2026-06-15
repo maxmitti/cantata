@@ -38,9 +38,9 @@
 SmartPlaylistsPage::SmartPlaylistsPage(QWidget* p)
 	: SinglePageWidget(p)
 {
-	addAction = new Action(Icons::self()->addNewItemIcon, tr("Add"), this);
-	editAction = new Action(Icons::self()->editIcon, tr("Edit"), this);
-	removeAction = new Action(Icons::self()->removeIcon, tr("Remove"), this);
+	addAction = new Action(Icons::self()->addNewItemIcon, tr("Add"), this, this, &SmartPlaylistsPage::addNew);
+	editAction = new Action(Icons::self()->editIcon, tr("Edit"), this, this, &SmartPlaylistsPage::edit);
+	removeAction = new Action(Icons::self()->removeIcon, tr("Remove"), this, this, &SmartPlaylistsPage::remove);
 
 	ToolButton* addBtn = new ToolButton(this);
 	ToolButton* editBtn = new ToolButton(this);
@@ -50,15 +50,12 @@ SmartPlaylistsPage::SmartPlaylistsPage(QWidget* p)
 	editBtn->setDefaultAction(editAction);
 	removeBtn->setDefaultAction(removeAction);
 
-	connect(this, SIGNAL(search(QByteArray, QString)), MPDConnection::self(), SLOT(search(QByteArray, QString)));
-	connect(MPDConnection::self(), SIGNAL(searchResponse(QString, QList<Song>)), this, SLOT(searchResponse(QString, QList<Song>)));
-	connect(this, SIGNAL(getRating(QString)), MPDConnection::self(), SLOT(getRating(QString)));
-	connect(MPDConnection::self(), SIGNAL(rating(QString, quint8)), this, SLOT(rating(QString, quint8)));
-	connect(view, SIGNAL(itemsSelected(bool)), this, SLOT(controlActions()));
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
-	connect(addAction, SIGNAL(triggered()), SLOT(addNew()));
-	connect(editAction, SIGNAL(triggered()), SLOT(edit()));
-	connect(removeAction, SIGNAL(triggered()), SLOT(remove()));
+	connect(this, &SmartPlaylistsPage::search, MPDConnection::self(), qOverload<const QByteArray&, const QString&>(&MPDConnection::search));
+	connect(MPDConnection::self(), qOverload<const QString&, const QList<Song>&>(&MPDConnection::searchResponse), this, &SmartPlaylistsPage::searchResponse);
+	connect(this, &SmartPlaylistsPage::getRating, MPDConnection::self(), &MPDConnection::getRating);
+	connect(MPDConnection::self(), &MPDConnection::rating, this, &SmartPlaylistsPage::rating);
+	connect(view, &ItemView::itemsSelected, this, &SmartPlaylistsPage::controlActions);
+	connect(view, &ItemView::headerClicked, this, &SmartPlaylistsPage::headerClicked);
 
 	proxy.setSourceModel(SmartPlaylists::self());
 	view->setModel(&proxy);

@@ -184,7 +184,7 @@ void UltimateLyrics::load()
 						UltimateLyricsProvider* provider = parseProvider(&reader);
 						if (provider) {
 							providers << provider;
-							connect(provider, SIGNAL(lyricsReady(int, QString)), this, SIGNAL(lyricsReady(int, QString)));
+							connect(provider, &UltimateLyricsProvider::lyricsReady, this, &UltimateLyrics::lyricsReady);
 							providerNames.insert(name);
 						}
 					}

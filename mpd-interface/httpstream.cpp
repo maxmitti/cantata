@@ -66,13 +66,13 @@ void HttpStream::setEnabled(bool e)
 
 	enabled = e;
 	if (enabled) {
-		connect(MPDConnection::self(), SIGNAL(streamUrl(QString)), this, SLOT(streamUrl(QString)));
-		connect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(updateStatus()));
+		connect(MPDConnection::self(), &MPDConnection::streamUrl, this, &HttpStream::streamUrl);
+		connect(MPDStatus::self(), &MPDStatus::updated, this, &HttpStream::updateStatus);
 		streamUrl(MPDConnection::self()->getDetails().streamUrl);
 	}
 	else {
-		disconnect(MPDConnection::self(), SIGNAL(streamUrl(QString)), this, SLOT(streamUrl(QString)));
-		disconnect(MPDStatus::self(), SIGNAL(updated()), this, SLOT(updateStatus()));
+		disconnect(MPDConnection::self(), &MPDConnection::streamUrl, this, &HttpStream::streamUrl);
+		disconnect(MPDStatus::self(), &MPDStatus::updated, this, &HttpStream::updateStatus);
 		if (player) {
 			save();
 #ifdef LIBVLC_FOUND
@@ -281,7 +281,7 @@ void HttpStream::startTimer()
 		playStateCheckTimer = new QTimer(this);
 		playStateCheckTimer->setSingleShot(false);
 		playStateCheckTimer->setInterval(constPlayerCheckPeriod);
-		connect(playStateCheckTimer, SIGNAL(timeout()), SLOT(checkPlayer()));
+		connect(playStateCheckTimer, &QTimer::timeout, this, &HttpStream::checkPlayer);
 	}
 	playStateChecks = constMaxPlayStateChecks;
 	DBUG << playStateChecks;

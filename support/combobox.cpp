@@ -45,7 +45,7 @@ ComboBox::ComboBox(QWidget* p)
 		}
 	}
 #endif
-	connect(this, SIGNAL(editTextChanged(QString)), this, SIGNAL(textChanged(QString)));
+	connect(this, &ComboBox::editTextChanged, this, &ComboBox::textChanged);
 }
 
 void ComboBox::setEditable(bool editable)

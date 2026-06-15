@@ -67,7 +67,7 @@ TrackOrganiser::TrackOrganiser(QWidget* parent)
 	setMainWidget(mainWidet);
 	configFilename->setIcon(Icons::self()->configureIcon);
 	setButtonGuiItem(Ok, GuiItem(tr("Rename")));
-	connect(this, SIGNAL(update()), MPDConnection::self(), SLOT(updateMaybe()));
+	connect(this, &TrackOrganiser::update, MPDConnection::self(), &MPDConnection::updateMaybe);
 	progress->setVisible(false);
 	files->setItemDelegate(new BasicItemDelegate(files));
 	files->setAlternatingRowColors(false);
@@ -76,8 +76,8 @@ TrackOrganiser::TrackOrganiser(QWidget* parent)
 	removeAct = new Action(tr("Remove From List"), files);
 	removeAct->setEnabled(false);
 	files->addAction(removeAct);
-	connect(files, SIGNAL(itemSelectionChanged()), SLOT(controlRemoveAct()));
-	connect(removeAct, SIGNAL(triggered()), SLOT(removeItems()));
+	connect(files, &QTreeWidget::itemSelectionChanged, this, &TrackOrganiser::controlRemoveAct);
+	connect(removeAct, &Action::triggered, this, &TrackOrganiser::removeItems);
 }
 
 TrackOrganiser::~TrackOrganiser()
@@ -134,17 +134,17 @@ void TrackOrganiser::show(const QList<Song>& songs, const QString& udi, bool for
 	ignoreThe->setChecked(opts.ignoreThe);
 	replaceSpaces->setChecked(opts.replaceSpaces);
 
-	connect(configFilename, SIGNAL(clicked()), SLOT(configureFilenameScheme()));
-	connect(filenameScheme, SIGNAL(textChanged(const QString&)), this, SLOT(updateView()));
-	connect(vfatSafe, SIGNAL(toggled(bool)), this, SLOT(updateView()));
-	connect(asciiOnly, SIGNAL(toggled(bool)), this, SLOT(updateView()));
-	connect(ignoreThe, SIGNAL(toggled(bool)), this, SLOT(updateView()));
-	connect(replaceSpaces, SIGNAL(toggled(bool)), this, SLOT(updateView()));
+	connect(configFilename, &QToolButton::clicked, this, &TrackOrganiser::configureFilenameScheme);
+	connect(filenameScheme, &LineEdit::textChanged, this, &TrackOrganiser::updateView);
+	connect(vfatSafe, &QCheckBox::toggled, this, &TrackOrganiser::updateView);
+	connect(asciiOnly, &QCheckBox::toggled, this, &TrackOrganiser::updateView);
+	connect(ignoreThe, &QCheckBox::toggled, this, &TrackOrganiser::updateView);
+	connect(replaceSpaces, &QCheckBox::toggled, this, &TrackOrganiser::updateView);
 
 	if (!songsOk(origSongs, musicFolder, udi.isEmpty())) {
 		return;
 	}
-	connect(ratingsNote, SIGNAL(leftClickedUrl()), SLOT(showRatingsMessage()));
+	connect(ratingsNote, &UrlNoteLabel::leftClickedUrl, this, &TrackOrganiser::showRatingsMessage);
 	Dialog::show();
 	enableButtonOk(false);
 	updateView();
@@ -161,7 +161,7 @@ void TrackOrganiser::slotButtonClicked(int button)
 			paused = true;
 			if (MessageBox::No == MessageBox::questionYesNo(this, tr("Abort renaming of files?"), tr("Abort"), GuiItem(tr("Abort")), StdGuiItem::cancel())) {
 				paused = false;
-				QTimer::singleShot(0, this, SLOT(renameFile()));
+				QTimer::singleShot(0, this, &TrackOrganiser::renameFile);
 				return;
 			}
 		}
@@ -178,7 +178,7 @@ void TrackOrganiser::configureFilenameScheme()
 {
 	if (!schemeDlg) {
 		schemeDlg = new FilenameSchemeDialog(this);
-		connect(schemeDlg, SIGNAL(scheme(const QString&)), this, SLOT(setFilenameScheme(const QString&)));
+		connect(schemeDlg, &FilenameSchemeDialog::scheme, this, &TrackOrganiser::setFilenameScheme);
 	}
 	readOptions();
 	schemeDlg->show(opts);
@@ -241,7 +241,7 @@ void TrackOrganiser::startRename()
 	paused = autoSkip = false;
 	saveOptions();
 
-	QTimer::singleShot(100, this, SLOT(renameFile()));
+	QTimer::singleShot(100, this, &TrackOrganiser::renameFile);
 }
 
 void TrackOrganiser::renameFile()
@@ -464,7 +464,7 @@ void TrackOrganiser::renameFile()
 		finish(true);
 	}
 	else {
-		QTimer::singleShot(100, this, SLOT(renameFile()));
+		QTimer::singleShot(100, this, &TrackOrganiser::renameFile);
 	}
 }
 

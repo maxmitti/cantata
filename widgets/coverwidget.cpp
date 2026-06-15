@@ -193,12 +193,12 @@ void CoverWidget::setSize(int min)
 void CoverWidget::setEnabled(bool e)
 {
 	if (e) {
-		connect(CurrentCover::self(), SIGNAL(coverImage(QImage)), this, SLOT(coverImage(QImage)));
+		connect(CurrentCover::self(), &CurrentCover::coverImage, this, &CoverWidget::coverImage);
 		coverImage(QImage());
 	}
 	else {
 		label->deletePix();
-		disconnect(CurrentCover::self(), SIGNAL(coverImage(QImage)), this, SLOT(coverImage(QImage)));
+		disconnect(CurrentCover::self(), &CurrentCover::coverImage, this, &CoverWidget::coverImage);
 	}
 	setVisible(e);
 	label->setEnabled(e);

@@ -51,7 +51,7 @@ MessageOverlay::MessageOverlay(QObject* p)
 	redOpt.insert("color", Icon::constRed);
 	cancelButton->setIcon(Icon::fa(fa::fa_solid, fa::fa_close, redOpt));
 	cancelButton->adjustSize();
-	connect(cancelButton, SIGNAL(clicked()), SIGNAL(cancel()));
+	connect(cancelButton, &ToolButton::clicked, this, &MessageOverlay::cancel);
 }
 
 void MessageOverlay::setWidget(QWidget* widget)
@@ -76,7 +76,7 @@ void MessageOverlay::setText(const QString& txt, int timeout, bool allowCancel)
 		if (-1 != timeout) {
 			if (!timer) {
 				timer = new QTimer(this);
-				connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
+				connect(timer, &QTimer::timeout, this, &MessageOverlay::timeout);
 			}
 			timer->start(timeout);
 		}

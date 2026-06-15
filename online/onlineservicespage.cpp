@@ -41,18 +41,18 @@ OnlineServicesPage::OnlineServicesPage(QWidget* p)
 	// Start hide service
 	//	JamendoService* jamendo = new JamendoService(this);
 	//	addPage(jamendo->name(), jamendo->icon(), jamendo->title(), jamendo->descr(), new OnlineDbWidget(jamendo, this));
-	//	connect(jamendo, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
+	//	connect(jamendo, &MpdSocket::error, this, &OnlineServicesPage::error);
 	// End hide service
 
 	MagnatuneService* magnatune = new MagnatuneService(this);
 	addPage(magnatune->name(), magnatune->icon(), magnatune->title(), magnatune->descr(), new OnlineDbWidget(magnatune, this));
-	connect(magnatune, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
+	connect(magnatune, &MagnatuneService::error, this, &OnlineServicesPage::error);
 
 	//SoundCloudService *soundcloud=new SoundCloudService(this);
 	//addPage(soundcloud->name(), soundcloud->icon(), soundcloud->title(), soundcloud->descr(), new OnlineSearchWidget(soundcloud, this));
 
 	addPage(PodcastService::self()->name(), PodcastService::self()->icon(), PodcastService::self()->title(), PodcastService::self()->descr(), new PodcastWidget(PodcastService::self(), this));
-	connect(PodcastService::self(), SIGNAL(error(QString)), this, SIGNAL(error(QString)));
+	connect(PodcastService::self(), &PodcastService::error, this, &OnlineServicesPage::error);
 
 	Configuration config(metaObject()->className());
 	load(config);

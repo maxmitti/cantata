@@ -80,11 +80,11 @@ ServerSettings::ServerSettings(QWidget* p)
 #endif
 	musicFolderNoteLabel->appendText(QLatin1String("<br/><i><a href=\"https://github.com/nullobsi/cantata/wiki/Accessing-music-files,-and-covers\">") + tr("More information") + QLatin1String("</a></i>"));
 
-	connect(combo, SIGNAL(activated(int)), SLOT(showDetails(int)));
-	connect(removeButton, SIGNAL(clicked(bool)), SLOT(remove()));
-	connect(addButton, SIGNAL(clicked(bool)), SLOT(add()));
-	connect(name, SIGNAL(textChanged(QString)), SLOT(nameChanged()));
-	connect(basicDir, SIGNAL(textChanged(QString)), SLOT(basicDirChanged()));
+	connect(combo, &QComboBox::activated, this, &ServerSettings::showDetails);
+	connect(removeButton, &FlatToolButton::clicked, this, &ServerSettings::remove);
+	connect(addButton, &FlatToolButton::clicked, this, &ServerSettings::add);
+	connect(name, &LineEdit::textChanged, this, &ServerSettings::nameChanged);
+	connect(basicDir, &PathRequester::textChanged, this, &ServerSettings::basicDirChanged);
 	addButton->setIcon(Icons::self()->addIcon);
 	removeButton->setIcon(Icons::self()->minusIcon);
 	addButton->setAutoRaise(true);

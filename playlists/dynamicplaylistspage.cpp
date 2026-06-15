@@ -54,19 +54,19 @@ DynamicPlaylistsPage::DynamicPlaylistsPage(QWidget* p)
 	view->addAction(DynamicPlaylists::self()->startAct());
 	view->alwaysShowHeader();
 
-	connect(view, SIGNAL(itemsSelected(bool)), this, SLOT(controlActions()));
-	connect(view, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(toggle()));
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
-	connect(MPDConnection::self(), SIGNAL(dynamicSupport(bool)), this, SLOT(remoteDynamicSupport(bool)));
-	connect(addAction, SIGNAL(triggered()), SLOT(add()));
-	connect(editAction, SIGNAL(triggered()), SLOT(edit()));
-	connect(removeAction, SIGNAL(triggered()), SLOT(remove()));
-	connect(DynamicPlaylists::self()->startAct(), SIGNAL(triggered()), SLOT(start()));
-	connect(DynamicPlaylists::self()->stopAct(), SIGNAL(triggered()), SLOT(stop()));
-	connect(toggleAction, SIGNAL(triggered()), SLOT(toggle()));
-	connect(DynamicPlaylists::self(), SIGNAL(running(bool)), SLOT(running(bool)));
-	connect(DynamicPlaylists::self(), SIGNAL(loadingList()), view, SLOT(showSpinner()));
-	connect(DynamicPlaylists::self(), SIGNAL(loadedList()), view, SLOT(hideSpinner()));
+	connect(view, &ItemView::itemsSelected, this, &DynamicPlaylistsPage::controlActions);
+	connect(view, &ItemView::doubleClicked, this, &DynamicPlaylistsPage::toggle);
+	connect(view, &ItemView::headerClicked, this, &DynamicPlaylistsPage::headerClicked);
+	connect(MPDConnection::self(), &MPDConnection::dynamicSupport, this, &DynamicPlaylistsPage::remoteDynamicSupport);
+	connect(addAction, &Action::triggered, this, &DynamicPlaylistsPage::add);
+	connect(editAction, &Action::triggered, this, &DynamicPlaylistsPage::edit);
+	connect(removeAction, &Action::triggered, this, &DynamicPlaylistsPage::remove);
+	connect(DynamicPlaylists::self()->startAct(), &Action::triggered, this, &DynamicPlaylistsPage::start);
+	connect(DynamicPlaylists::self()->stopAct(), &Action::triggered, this, &DynamicPlaylistsPage::stop);
+	connect(toggleAction, &Action::triggered, this, &DynamicPlaylistsPage::toggle);
+	connect(DynamicPlaylists::self(), &DynamicPlaylists::running, this, &DynamicPlaylistsPage::running);
+	connect(DynamicPlaylists::self(), &DynamicPlaylists::loadingList, view, &ItemView::showSpinner);
+	connect(DynamicPlaylists::self(), &DynamicPlaylists::loadedList, view, &ItemView::hideSpinner);
 
 	DynamicPlaylists::self()->stopAct()->setEnabled(false);
 	proxy.setSourceModel(DynamicPlaylists::self());

@@ -42,10 +42,10 @@ LocalFolderBrowsePage::LocalFolderBrowsePage(bool isHome, QWidget* p)
 			: new LocalBrowseModel(QLatin1String("localbrowseroot"), tr("Root"), tr("Browse files on your computer"), Icon::fa()->icon(fa::fa_regular, fa::fa_hdd), this);
 	proxy = new FileSystemProxyModel(model);
 	browseAction = new Action(Icon::fa()->icon(fa::fa_solid, fa::fa_folder_open), tr("Open In File Manager"), this);
-	connect(view, SIGNAL(itemsSelected(bool)), this, SLOT(controlActions()));
-	connect(view, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(itemDoubleClicked(const QModelIndex&)));
-	connect(view, SIGNAL(headerClicked(int)), SLOT(headerClicked(int)));
-	connect(browseAction, SIGNAL(triggered()), this, SLOT(openFileManager()));
+	connect(view, &ItemView::itemsSelected, this, &LocalFolderBrowsePage::controlActions);
+	connect(view, &ItemView::doubleClicked, this, &LocalFolderBrowsePage::itemDoubleClicked);
+	connect(view, &ItemView::headerClicked, this, &LocalFolderBrowsePage::headerClicked);
+	connect(browseAction, &Action::triggered, this, &LocalFolderBrowsePage::openFileManager);
 	view->setModel(proxy);
 	Configuration config(configGroup());
 	view->load(config);
